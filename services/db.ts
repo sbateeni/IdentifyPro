@@ -1,6 +1,10 @@
 
-const DB_NAME = 'FingerprintAppDB';
-const STORE_NAME = 'settings';
+import { HistoryRecord } from "../types";
+
+const DB_NAME = 'RidgeAiDB'; // Changed DB name for rebranding
+const DB_VERSION = 2;
+const STORE_SETTINGS = 'settings';
+const STORE_HISTORY = 'history';
 const KEY_ID = 'gemini_api_key';
 
 const openDB = (): Promise<IDBDatabase> => {
@@ -9,12 +13,20 @@ const openDB = (): Promise<IDBDatabase> => {
       reject(new Error("IndexedDB not supported"));
       return;
     }
-    const request = indexedDB.open(DB_NAME, 1);
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
     
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
+      
+      // Create Settings Store
+      if (!db.objectStoreNames.contains(STORE_SETTINGS)) {
+        db.createObjectStore(STORE_SETTINGS);
+      }
+
+      // Create History Store
+      if (!db.objectStoreNames.contains(STORE_HISTORY)) {
+        const historyStore = db.createObjectStore(STORE_HISTORY, { keyPath: 'id', autoIncrement: true });
+        historyStore.createIndex('timestamp', 'timestamp', { unique: false });
       }
     };
 
@@ -23,12 +35,14 @@ const openDB = (): Promise<IDBDatabase> => {
   });
 };
 
+// --- API KEY OPERATIONS ---
+
 export const saveApiKey = async (key: string): Promise<void> => {
   try {
     const db = await openDB();
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
+      const transaction = db.transaction(STORE_SETTINGS, 'readwrite');
+      const store = transaction.objectStore(STORE_SETTINGS);
       const request = store.put(key, KEY_ID);
       
       request.onsuccess = () => resolve();
@@ -44,8 +58,8 @@ export const getApiKey = async (): Promise<string | null> => {
   try {
     const db = await openDB();
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, 'readonly');
-      const store = transaction.objectStore(STORE_NAME);
+      const transaction = db.transaction(STORE_SETTINGS, 'readonly');
+      const store = transaction.objectStore(STORE_SETTINGS);
       const request = store.get(KEY_ID);
       
       request.onsuccess = () => resolve(request.result || null);
@@ -61,8 +75,8 @@ export const removeApiKey = async (): Promise<void> => {
   try {
     const db = await openDB();
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
+      const transaction = db.transaction(STORE_SETTINGS, 'readwrite');
+      const store = transaction.objectStore(STORE_SETTINGS);
       const request = store.delete(KEY_ID);
       
       request.onsuccess = () => resolve();
@@ -72,4 +86,44 @@ export const removeApiKey = async (): Promise<void> => {
     console.error("Error removing API key:", error);
     throw error;
   }
+};
+
+// --- HISTORY OPERATIONS ---
+
+export const saveHistory = async (record: Omit<HistoryRecord, 'id'>): Promise<number> => {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_HISTORY, 'readwrite');
+    const store = transaction.objectStore(STORE_HISTORY);
+    const request = store.add(record);
+    
+    request.onsuccess = () => resolve(request.result as number);
+    request.onerror = () => reject(request.error);
+  });
+};
+
+export const getHistory = async (): Promise<HistoryRecord[]> => {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_HISTORY, 'readonly');
+    const store = transaction.objectStore(STORE_HISTORY);
+    const index = store.index('timestamp');
+    // Get all records, sorted by timestamp (oldest to newest by default, we'll reverse in UI)
+    const request = index.getAll();
+    
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+};
+
+export const deleteHistoryItem = async (id: number): Promise<void> => {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_HISTORY, 'readwrite');
+    const store = transaction.objectStore(STORE_HISTORY);
+    const request = store.delete(id);
+    
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
 };

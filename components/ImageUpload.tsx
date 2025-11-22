@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
-import { Upload, X, Fingerprint } from 'lucide-react';
+import { Fingerprint } from 'lucide-react';
+import ImageEnhancer from './ImageEnhancer';
 
 interface ImageUploadProps {
   label: string;
@@ -32,26 +34,17 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ label, imageFile, onImageChan
 
   return (
     <div className="flex flex-col w-full">
-      <label className="text-slate-700 font-bold mb-2 block text-sm">{label}</label>
+      <label className="text-slate-700 font-bold mb-2 block text-sm flex justify-between items-center">
+        {label}
+        {imageFile && <span className="text-xs font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">{imageFile.name}</span>}
+      </label>
       
-      {preview ? (
-        <div className="relative w-full h-64 bg-slate-100 rounded-xl border-2 border-slate-200 overflow-hidden group shadow-sm">
-          <img 
-            src={preview} 
-            alt="Fingerprint preview" 
-            className="w-full h-full object-contain p-2 opacity-90 grayscale contrast-125" 
-          />
-          <button
-            onClick={handleRemove}
-            className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-            title="إزالة الصورة"
-          >
-            <X size={20} />
-          </button>
-          <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
-            {imageFile?.name}
-          </div>
-        </div>
+      {preview && imageFile ? (
+        <ImageEnhancer 
+          src={preview} 
+          fileName={imageFile.name} 
+          onRemove={handleRemove} 
+        />
       ) : (
         <div className="relative w-full h-64 bg-white rounded-xl border-2 border-dashed border-slate-300 hover:border-indigo-500 hover:bg-indigo-50 transition-colors cursor-pointer flex flex-col items-center justify-center group">
           <input

@@ -3,9 +3,11 @@ import React, { useState } from 'react';
 import ImageUpload from './components/ImageUpload';
 import Results from './components/Results';
 import SettingsModal from './components/SettingsModal';
+import HistorySidebar from './components/HistorySidebar';
 import { compareFingerprints } from './services/geminiService';
-import { ComparisonResult } from './types';
-import { ScanLine, Loader2, ShieldCheck, Users, Settings, Key } from 'lucide-react';
+import { saveHistory } from './services/db';
+import { ComparisonResult, HistoryRecord } from './types';
+import { ScanLine, Loader2, ShieldCheck, Users, Settings, Key, History } from 'lucide-react';
 
 const App: React.FC = () => {
   const [file1, setFile1] = useState<File | null>(null);
@@ -13,7 +15,9 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ComparisonResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   const handleCompare = async () => {
     if (!file1 || !file2) return;
@@ -25,11 +29,47 @@ const App: React.FC = () => {
     try {
       const analysis = await compareFingerprints(file1, file2);
       setResult(analysis);
-    } catch (err) {
-      setError("حدث خطأ أثناء تحليل الصور. يرجى التأكد من وضوح الصور والمحاولة مرة أخرى.");
+      
+      // Save to History automatically
+      try {
+        await saveHistory({
+          timestamp: Date.now(),
+          file1Name: file1.name,
+          file2Name: file2.name,
+          result: analysis
+        });
+      } catch (saveErr) {
+        console.error("Could not save to history", saveErr);
+      }
+
+    } catch (err: any) {
+      const errorMessage = err.message || "حدث خطأ غير معروف";
+      
+      // Check for API Key errors
+      if (errorMessage.includes("مفتاح API") || errorMessage.includes("API key")) {
+        setError(errorMessage);
+        setIsSettingsOpen(true);
+      } else {
+        setError("حدث خطأ أثناء تحليل الصور. يرجى التأكد من وضوح الصور والمحاولة مرة أخرى.");
+      }
+      console.error(err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleHistorySelect = (record: HistoryRecord) => {
+    setResult(record.result);
+    // Note: We can't easily restore the actual File objects from DB without storing blobs, 
+    // so we just show the result and maybe clear the file inputs or show placeholders.
+    // For UX clarity, let's clear current files to indicate we are viewing a record.
+    setFile1(null);
+    setFile2(null);
+    
+    // Scroll to results
+    setTimeout(() => {
+      document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   const reset = () => {
@@ -42,59 +82,70 @@ const App: React.FC = () => {
   const isReady = file1 && file2;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-12 font-tajawal">
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-12 font-tajawal relative overflow-x-hidden">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-indigo-700">
-            <ScanLine className="w-7 h-7" />
-            <h1 className="text-xl font-bold tracking-tight">مطابق البصمات الاحترافي</h1>
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm/50 backdrop-blur-md bg-white/90">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-indigo-900">
+            <div className="bg-indigo-600 p-1.5 rounded-lg text-white">
+              <ScanLine className="w-5 h-5" />
+            </div>
+            <h1 className="text-xl font-extrabold tracking-tight">RidgeAI</h1>
           </div>
           
-          <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-1 text-xs font-medium bg-indigo-50 px-3 py-1.5 rounded-full text-indigo-700 border border-indigo-100">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="hidden md:flex items-center gap-1 text-xs font-bold bg-indigo-50 px-3 py-1.5 rounded-full text-indigo-700 border border-indigo-100">
               <Users className="w-3 h-3" />
-              <span>نظام الوكلاء المتعدد</span>
+              <span>Multi-Agent System</span>
             </div>
             
-            {/* API Quick Access Button */}
+            <button
+              onClick={() => setIsHistoryOpen(true)}
+              className="p-2 text-slate-500 hover:bg-slate-100 hover:text-indigo-600 rounded-lg transition-all flex items-center gap-2"
+              title="سجل العمليات"
+            >
+              <History className="w-5 h-5" />
+              <span className="hidden sm:inline text-xs font-bold">الأرشيف</span>
+            </button>
+
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 text-orange-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-orange-100 transition-colors"
+              className="flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors shadow-sm"
             >
               <Key className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">API Key</span>
-            </button>
-
-            <button 
-              onClick={() => setIsSettingsOpen(true)}
-              className="p-2 text-slate-500 hover:bg-slate-100 hover:text-indigo-600 rounded-full transition-all"
-              title="الإعدادات"
-            >
-              <Settings className="w-5 h-5" />
             </button>
           </div>
         </div>
       </header>
 
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <HistorySidebar 
+        isOpen={isHistoryOpen} 
+        onClose={() => setIsHistoryOpen(false)} 
+        onSelectRecord={handleHistorySelect}
+      />
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-5xl mx-auto px-4 py-8 md:py-12">
         
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-slate-800 mb-3">تحليل ومقارنة البصمات الجنائي</h2>
-          <p className="text-slate-500 max-w-xl mx-auto leading-relaxed">
-            يقوم النظام بتشغيل 3 وكلاء ذكاء اصطناعي: وكيلان لاستخراج التفاصيل الدقيقة من كل بصمة بشكل مستقل، ووكيل ثالث لإجراء مقارنة جنائية وحساب نسبة التطابق بدقة عالية.
-          </p>
-        </div>
+        {!result && (
+          <div className="text-center mb-12 animate-fade-up">
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">
+              نظام التحليل الجنائي <span className="text-indigo-600">الذكي</span>
+            </h2>
+            <p className="text-slate-500 max-w-2xl mx-auto leading-relaxed text-lg">
+              RidgeAI يستخدم شبكة من وكلاء الذكاء الاصطناعي لمطابقة البصمات بدقة متناهية، كشف التزييف، واستخراج الأدلة الجنائية في ثوانٍ.
+            </p>
+          </div>
+        )}
 
         {/* Upload Section */}
-        <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start relative">
+        <div className={`bg-white p-6 md:p-10 rounded-3xl shadow-xl shadow-slate-200/50 border border-white ring-1 ring-slate-100 mb-10 transition-all duration-500 ${result ? 'hidden print:hidden' : 'block'}`}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-start relative">
             
-            {/* Divider for desktop */}
-            <div className="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-100 p-2 rounded-full z-10 border border-slate-200">
-              <span className="text-slate-400 font-bold text-xs">VS</span>
+            {/* VS Badge */}
+            <div className="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-3 rounded-full z-10 shadow-lg border border-slate-100 text-slate-300 font-black text-sm">
+              VS
             </div>
 
             <ImageUpload 
@@ -110,27 +161,27 @@ const App: React.FC = () => {
           </div>
 
           {/* Action Button */}
-          <div className="mt-8 flex justify-center">
+          <div className="mt-10 flex justify-center">
             <button
               onClick={handleCompare}
               disabled={!isReady || loading}
               className={`
-                relative overflow-hidden group px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 w-full md:w-auto min-w-[280px]
+                relative overflow-hidden group px-10 py-4 rounded-2xl font-bold text-lg transition-all duration-300 w-full md:w-auto min-w-[300px] shadow-lg
                 ${isReady 
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 hover:shadow-xl hover:bg-indigo-700 hover:-translate-y-0.5' 
-                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'}
+                  ? 'bg-indigo-600 text-white shadow-indigo-300/50 hover:shadow-indigo-400/60 hover:bg-indigo-700 hover:-translate-y-1' 
+                  : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'}
               `}
             >
-              <span className="relative z-10 flex items-center justify-center gap-2">
+              <span className="relative z-10 flex items-center justify-center gap-3">
                 {loading ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-6 h-6 animate-spin" />
                     جاري تحليل الوكلاء...
                   </>
                 ) : (
                   <>
-                    <ShieldCheck className="w-5 h-5" />
-                    بدء الفحص الدقيق
+                    <ShieldCheck className="w-6 h-6" />
+                    بدء الفحص الجنائي
                   </>
                 )}
               </span>
@@ -140,20 +191,42 @@ const App: React.FC = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 mb-8 text-center animate-fade-in flex items-center justify-center gap-2">
-             <ShieldCheck className="w-5 h-5" />
-            {error}
+          <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 mb-8 text-center animate-fade-up flex flex-col items-center justify-center gap-2">
+             <div className="flex items-center gap-2 font-bold">
+                <ShieldCheck className="w-5 h-5" />
+                {error}
+             </div>
+             {error.includes("مفتاح API") && (
+                <button onClick={() => setIsSettingsOpen(true)} className="text-xs underline mt-1 hover:text-red-800">
+                  اضغط هنا لفتح الإعدادات
+                </button>
+             )}
           </div>
         )}
 
         {/* Results Section */}
         {result && (
-          <div id="results">
+          <div id="results" className="animate-fade-up">
+            
+            {/* Toolbar when showing results */}
+            <div className="flex items-center justify-between mb-6 no-print">
+               <button 
+                onClick={reset}
+                className="text-slate-500 hover:text-slate-800 flex items-center gap-2 text-sm font-medium transition-colors"
+              >
+                ← عودة للفحص الجديد
+              </button>
+              <div className="text-sm text-slate-400">
+                ID: {Date.now().toString().slice(-6)}
+              </div>
+            </div>
+
             <Results result={result} />
-            <div className="mt-10 text-center pb-8">
+            
+            <div className="mt-12 text-center pb-8 no-print">
               <button 
                 onClick={reset}
-                className="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 px-6 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
+                className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 px-8 py-3 rounded-xl text-sm font-bold transition-all shadow-sm hover:shadow-md"
               >
                 إجراء فحص جديد
               </button>
