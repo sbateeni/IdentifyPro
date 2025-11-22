@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import ImageUpload from './components/ImageUpload';
 import Results from './components/Results';
@@ -43,16 +42,35 @@ const App: React.FC = () => {
       }
 
     } catch (err: any) {
-      const errorMessage = err.message || "حدث خطأ غير معروف";
+      console.error("Scan Error:", err);
+      let errorMessage = err.message || "حدث خطأ غير معروف";
       
-      // Check for API Key errors
-      if (errorMessage.includes("مفتاح API") || errorMessage.includes("API key")) {
-        setError(errorMessage);
+      // Try to parse JSON error message if present
+      if (typeof errorMessage === 'string' && errorMessage.includes('{')) {
+         try {
+           const jsonPart = errorMessage.substring(errorMessage.indexOf('{'));
+           const parsed = JSON.parse(jsonPart);
+           if (parsed.error && parsed.error.message) {
+             errorMessage = parsed.error.message;
+           }
+         } catch (e) {
+           // ignore parsing error
+         }
+      }
+
+      // Check for API Key specific errors (403, 400, etc)
+      const isAuthError = 
+        errorMessage.includes("API key") || 
+        errorMessage.includes("PERMISSION_DENIED") || 
+        errorMessage.includes("403") ||
+        errorMessage.toLowerCase().includes("permission");
+
+      if (isAuthError) {
+        setError("خطأ في الصلاحيات (403): مفتاح API غير صالح أو لا يملك إذن الوصول. يرجى التحقق من تفعيل Google Generative AI API في حسابك.");
         setIsSettingsOpen(true);
       } else {
-        setError("حدث خطأ أثناء تحليل الصور. يرجى التأكد من وضوح الصور والمحاولة مرة أخرى.");
+        setError(`حدث خطأ أثناء التحليل: ${errorMessage}`);
       }
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -194,11 +212,11 @@ const App: React.FC = () => {
           <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 mb-8 text-center animate-fade-up flex flex-col items-center justify-center gap-2">
              <div className="flex items-center gap-2 font-bold">
                 <ShieldCheck className="w-5 h-5" />
-                {error}
+                <span>{error}</span>
              </div>
-             {error.includes("مفتاح API") && (
-                <button onClick={() => setIsSettingsOpen(true)} className="text-xs underline mt-1 hover:text-red-800">
-                  اضغط هنا لفتح الإعدادات
+             {error.includes("403") && (
+                <button onClick={() => setIsSettingsOpen(true)} className="text-xs bg-red-100 px-3 py-1 rounded-full mt-2 hover:bg-red-200 transition-colors font-bold">
+                  تحديث مفتاح API
                 </button>
              )}
           </div>
@@ -221,7 +239,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <Results result={result} />
+            <Results result={result} file1={file1} file2={file2} />
             
             <div className="mt-12 text-center pb-8 no-print">
               <button 

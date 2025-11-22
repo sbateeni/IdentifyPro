@@ -46,6 +46,20 @@ export interface DistortionAnalysis {
   affectedZones: string[]; // Zones like "Central Core", "Upper Delta"
 }
 
+// NEW: Agent Iota (Visual Anatomical Mapping)
+export interface AnatomicalPoint {
+  label: string; // e.g., "Core Bifurcation"
+  zone1: 'top-left' | 'top-center' | 'top-right' | 'middle-left' | 'center' | 'middle-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
+  zone2: 'top-left' | 'top-center' | 'top-right' | 'middle-left' | 'center' | 'middle-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
+  confidence: number;
+}
+
+export interface AnatomicalMapping {
+  points: AnatomicalPoint[];
+  mappingScore: number;
+  visualConclusion: string;
+}
+
 // NEW: Agent Omega (Legal/Expert Witness)
 export interface LegalAssessment {
   admissibilityStatus: 'مقبول بقوة' | 'مقبول بحذر' | 'غير صالح قانونياً';
@@ -95,11 +109,14 @@ export interface ComparisonResult {
     file1: BiologicalAnalysis;
     file2: BiologicalAnalysis;
   };
-  // NEW: Agent Theta (Distortion)
+  // Agent Theta (Distortion)
   agentTheta: {
     file1: DistortionAnalysis;
     file2: DistortionAnalysis;
   };
+  // Agent Iota (Visual Mapping)
+  agentIota: AnatomicalMapping;
+  
   agent1Analysis: FingerprintAnalysis;
   agent2Analysis: FingerprintAnalysis;
   comparisonAgent: DetailedComparison;

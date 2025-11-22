@@ -145,7 +145,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             
             <div className="mt-4 flex items-start gap-2 text-[11px] text-slate-500 bg-blue-50 p-2 rounded border border-blue-100">
               <ShieldAlert className="w-4 h-4 flex-shrink-0 text-blue-500" />
-              <span>تنبيه: تأكد من أن مفتاح API الخاص بك مفعل ويمتلك الصلاحيات اللازمة لاستخدام موديلات Gemini.</span>
+              <span>
+                تنبيه: إذا ظهر خطأ "Permission Denied" (403)، فهذا يعني أن المفتاح غير مصرح له أو أن مشروعك على Google Cloud لم يفعل خدمة Generative Language API. تأكد من تفعيلها للمشروع المرتبط بالمفتاح.
+              </span>
             </div>
           </div>
         </div>

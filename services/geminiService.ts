@@ -73,16 +73,21 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
          - Edgeoscopy: شكل حواف الخطوط.
          - Biological Marks: ندوب وتجاعيد.
 
-      5. **Agent Theta (محلل التشويه والميكانيكا):** NEW!
-         - حدد مستوى الضغط (Pressure): خفيف، متوسط، شديد (يؤدي لسمك الخطوط).
-         - الالتواء (Torsion): هل تم تدوير الإصبع أثناء البصم؟
-         - المرونة (Elasticity): هل هناك مط للجلد يغير المسافات بين النقاط؟
-         - حدد المناطق المتأثرة بالتشويه.
+      5. **Agent Theta (محلل التشويه والميكانيكا):**
+         - حدد مستوى الضغط (Pressure).
+         - الالتواء (Torsion).
+         - المرونة (Elasticity).
 
-      6. **Agent Alpha & Beta:** تصنيف هنري والأنماط.
-      7. **Agent Gamma:** المقارنة التفصيلية.
+      6. **Agent Iota (المحلل التشريحي البصري - Visual Mapper):** NEW!
+         - حدد 3 إلى 5 نقاط تشريحية متطابقة (مثل: Core, Delta, Specific Ridge Ending).
+         - لكل نقطة، حدد منطقتها التقريبية (Zone) في الصورة الأولى والصورة الثانية.
+         - المناطق المتاحة: 'top-left', 'top-center', 'top-right', 'middle-left', 'center', 'middle-right', 'bottom-left', 'bottom-center', 'bottom-right'.
+         - هذا سيستخدم لرسم خطوط التطابق في الواجهة.
 
-      8. **Agent Omega (الخبير القانوني):**
+      7. **Agent Alpha & Beta:** تصنيف هنري والأنماط.
+      8. **Agent Gamma:** المقارنة التفصيلية.
+
+      9. **Agent Omega (الخبير القانوني):**
          - قيم مقبولية الدليل.
          - بيان الخبير النهائي.
          - ملاحظات الدفاع.
@@ -148,6 +153,28 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
       required: ["pressureLevel", "torsionDetected", "elasticityIssues", "distortionScore", "affectedZones"]
     };
 
+    const iotaSchema: Schema = {
+      type: Type.OBJECT,
+      properties: {
+        points: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              label: { type: Type.STRING, description: "Arabic label for the point" },
+              zone1: { type: Type.STRING, enum: ['top-left', 'top-center', 'top-right', 'middle-left', 'center', 'middle-right', 'bottom-left', 'bottom-center', 'bottom-right'] },
+              zone2: { type: Type.STRING, enum: ['top-left', 'top-center', 'top-right', 'middle-left', 'center', 'middle-right', 'bottom-left', 'bottom-center', 'bottom-right'] },
+              confidence: { type: Type.INTEGER }
+            },
+            required: ["label", "zone1", "zone2", "confidence"]
+          }
+        },
+        mappingScore: { type: Type.INTEGER },
+        visualConclusion: { type: Type.STRING }
+      },
+      required: ["points", "mappingScore", "visualConclusion"]
+    };
+
     const analysisSchema: Schema = {
       type: Type.OBJECT,
       properties: {
@@ -200,6 +227,7 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
           properties: { file1: distortionSchema, file2: distortionSchema },
           required: ["file1", "file2"]
         },
+        agentIota: iotaSchema,
         agent1Analysis: analysisSchema,
         agent2Analysis: analysisSchema,
         comparisonAgent: {
@@ -230,7 +258,7 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
           required: ["matchScore", "isMatch", "confidenceLevel", "forensicConclusion"]
         }
       },
-      required: ["qualityAgent", "forgeryAgent", "agentZeta", "agentSigma", "agentTheta", "agent1Analysis", "agent2Analysis", "comparisonAgent", "agentOmega", "finalResult"]
+      required: ["qualityAgent", "forgeryAgent", "agentZeta", "agentSigma", "agentTheta", "agentIota", "agent1Analysis", "agent2Analysis", "comparisonAgent", "agentOmega", "finalResult"]
     };
 
     const response = await ai.models.generateContent({
@@ -245,7 +273,7 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
       config: {
         responseMimeType: "application/json",
         responseSchema: responseSchema,
-        thinkingConfig: { thinkingBudget: 10240 } // Increased budget for 9 agents
+        thinkingConfig: { thinkingBudget: 10240 }
       },
     });
 

@@ -1,14 +1,16 @@
-
 import React from 'react';
 import { ComparisonResult } from '../types';
 import { CheckCircle, XCircle, AlertTriangle, Activity, GitCompare, FileText, ShieldAlert, Printer, Microscope, Eye, Fingerprint, Link, Ruler, GitMerge, Minus, CircleDot, BadgeCheck, Scale, Gavel, Dna, FileWarning, Layers, Download, Move } from 'lucide-react';
+import VisualMatcher from './VisualMatcher';
 
 interface ResultsProps {
   result: ComparisonResult;
+  file1: File | null;
+  file2: File | null;
 }
 
-const Results: React.FC<ResultsProps> = ({ result }) => {
-  const { qualityAgent, forgeryAgent, agentZeta, agentSigma, agentTheta, agentOmega, agent1Analysis, agent2Analysis, comparisonAgent, finalResult, chainOfCustody } = result;
+const Results: React.FC<ResultsProps> = ({ result, file1, file2 }) => {
+  const { qualityAgent, forgeryAgent, agentZeta, agentSigma, agentTheta, agentIota, agentOmega, agent1Analysis, agent2Analysis, comparisonAgent, finalResult, chainOfCustody } = result;
 
   // Color logic
   let colorClass = "text-yellow-600 bg-yellow-50 border-yellow-200";
@@ -125,8 +127,15 @@ const Results: React.FC<ResultsProps> = ({ result }) => {
         </p>
       </div>
 
+      {/* AGENT IOTA: Visual Matcher (NEW) */}
+      {agentIota && (
+        <div className="animate-fade-up delay-100">
+           <VisualMatcher data={agentIota} file1={file1} file2={file2} />
+        </div>
+      )}
+
       {/* Agents Grid 1: Quality & Forgery */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-up delay-100">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-up delay-200">
         
         {/* Quality Agent Delta */}
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
@@ -253,7 +262,7 @@ const Results: React.FC<ResultsProps> = ({ result }) => {
 
       </div>
 
-      {/* Agents Grid 3: Theta (Distortion) - NEW */}
+      {/* Agents Grid 3: Theta (Distortion) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-up delay-200">
          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm col-span-1 md:col-span-2">
             <h4 className="font-bold text-sm text-slate-800 mb-4 flex items-center gap-2">
@@ -305,7 +314,7 @@ const Results: React.FC<ResultsProps> = ({ result }) => {
          </div>
       </div>
 
-      {/* Agents Grid 4: Omega (Legal) - NEW */}
+      {/* Agents Grid 4: Omega (Legal) */}
       <div className="bg-slate-900 text-white p-6 rounded-xl shadow-lg border border-slate-700 animate-fade-up delay-300">
         <h4 className="font-bold text-sm mb-4 flex items-center gap-2 text-indigo-300">
           <Gavel className="w-5 h-5" />
