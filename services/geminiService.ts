@@ -78,16 +78,24 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
          - الالتواء (Torsion).
          - المرونة (Elasticity).
 
-      6. **Agent Iota (المحلل التشريحي البصري - Visual Mapper):** NEW!
+      6. **Agent Iota (المحلل التشريحي البصري - Visual Mapper):**
          - حدد 3 إلى 5 نقاط تشريحية متطابقة (مثل: Core, Delta, Specific Ridge Ending).
          - لكل نقطة، حدد منطقتها التقريبية (Zone) في الصورة الأولى والصورة الثانية.
-         - المناطق المتاحة: 'top-left', 'top-center', 'top-right', 'middle-left', 'center', 'middle-right', 'bottom-left', 'bottom-center', 'bottom-right'.
-         - هذا سيستخدم لرسم خطوط التطابق في الواجهة.
+         
+      7. **Agent Kappa (محلل القياس والاحتواء - Scale & Subset):** NEW!
+         - **مهم جداً:** قارن كثافة الخطوط (Ridge Density) وسمكها.
+         - إذا كانت الخطوط في الصورة الثانية "أعرض/أسمك" وتظهر تفاصيل أكبر من الصورة الأولى، فهذا يعني أنها **مكبرة (Zoomed In)**.
+         - تحقق بدقة: هل الصورة الثانية تمثل جزءاً فقط (Fragment/Subset) من الصورة الأولى الكاملة (Master)؟
+         - حدد نسبة التكبير (Scale Ratio):
+           - 1.0 = نفس الحجم.
+           - أكبر من 1.0 (مثلاً 2.5) = الصورة الثانية مكبرة جداً (Zoomed In).
+           - أصغر من 1.0 = الصورة الثانية مصغرة.
+         - حدد العلاقة: 'subset_master' (الثانية جزء من الأولى)، 'identical' (متطابق)، أو 'no_overlap'.
 
-      7. **Agent Alpha & Beta:** تصنيف هنري والأنماط.
-      8. **Agent Gamma:** المقارنة التفصيلية.
+      8. **Agent Alpha & Beta:** تصنيف هنري والأنماط.
+      9. **Agent Gamma:** المقارنة التفصيلية.
 
-      9. **Agent Omega (الخبير القانوني):**
+      10. **Agent Omega (الخبير القانوني):**
          - قيم مقبولية الدليل.
          - بيان الخبير النهائي.
          - ملاحظات الدفاع.
@@ -175,6 +183,18 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
       required: ["points", "mappingScore", "visualConclusion"]
     };
 
+    const kappaSchema: Schema = {
+      type: Type.OBJECT,
+      properties: {
+        isSubset: { type: Type.BOOLEAN },
+        scaleRatio: { type: Type.NUMBER, description: "e.g. 1.0, 2.5 (higher means zoomed in)" },
+        overlapPercentage: { type: Type.INTEGER, description: "0-100" },
+        relationship: { type: Type.STRING, enum: ['identical', 'subset_master', 'partial_overlap', 'no_overlap'] },
+        explanation: { type: Type.STRING, description: "Arabic explanation of size/scale/density relationship" }
+      },
+      required: ["isSubset", "scaleRatio", "overlapPercentage", "relationship", "explanation"]
+    };
+
     const analysisSchema: Schema = {
       type: Type.OBJECT,
       properties: {
@@ -228,6 +248,7 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
           required: ["file1", "file2"]
         },
         agentIota: iotaSchema,
+        agentKappa: kappaSchema,
         agent1Analysis: analysisSchema,
         agent2Analysis: analysisSchema,
         comparisonAgent: {
@@ -258,7 +279,7 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
           required: ["matchScore", "isMatch", "confidenceLevel", "forensicConclusion"]
         }
       },
-      required: ["qualityAgent", "forgeryAgent", "agentZeta", "agentSigma", "agentTheta", "agentIota", "agent1Analysis", "agent2Analysis", "comparisonAgent", "agentOmega", "finalResult"]
+      required: ["qualityAgent", "forgeryAgent", "agentZeta", "agentSigma", "agentTheta", "agentIota", "agentKappa", "agent1Analysis", "agent2Analysis", "comparisonAgent", "agentOmega", "finalResult"]
     };
 
     const response = await ai.models.generateContent({

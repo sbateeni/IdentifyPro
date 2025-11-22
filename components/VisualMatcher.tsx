@@ -46,7 +46,7 @@ const VisualMatcher: React.FC<VisualMatcherProps> = ({ data, file1, file2 }) => 
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Helper to map zone string to coordinates (Percentage)
+  // Helper to map zone string to coordinates (0-100 scale)
   const getCoordinates = (zone: string) => {
     const map: Record<string, { x: number, y: number }> = {
       'top-left': { x: 20, y: 20 },
@@ -76,11 +76,15 @@ const VisualMatcher: React.FC<VisualMatcherProps> = ({ data, file1, file2 }) => 
 
       <div className="relative p-6 flex flex-col md:flex-row justify-between items-center gap-8 min-h-[350px]">
         
-        {/* SVG Overlay Layer (Hidden on small screens if stacked, visible on md+) */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none z-20 hidden md:block">
+        {/* SVG Overlay Layer */}
+        <svg 
+          className="absolute inset-0 w-full h-full pointer-events-none z-20 hidden md:block"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+        >
           <defs>
             <filter id="glow">
-              <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+              <feGaussianBlur stdDeviation="0.5" result="coloredBlur"/>
               <feMerge>
                 <feMergeNode in="coloredBlur"/>
                 <feMergeNode in="SourceGraphic"/>
@@ -92,28 +96,26 @@ const VisualMatcher: React.FC<VisualMatcherProps> = ({ data, file1, file2 }) => 
             const start = getCoordinates(point.zone1);
             const end = getCoordinates(point.zone2);
             
-            // Adjust coordinates based on container layout (Left Image vs Right Image)
-            // Left Image Center is approx 25% of width, Right Image Center is approx 75% of width in the flex container
-            // Note: This is an approximation. For perfect alignment, we'd need element refs. 
-            // Assuming 50% split with gap.
+            // Convert to absolute unitless coordinates for the 0-100 viewBox
+            // Left side is 0-50, Right side is 50-100
             
-            const x1 = `${start.x / 2}%`; // Squeeze into left half (0-50%)
-            const y1 = `${start.y}%`;
+            const x1 = start.x / 2; // Map 0-100 to 0-50
+            const y1 = start.y;
             
-            const x2 = `${50 + (end.x / 2)}%`; // Squeeze into right half (50-100%)
-            const y2 = `${end.y}%`;
+            const x2 = 50 + (end.x / 2); // Map 0-100 to 50-100
+            const y2 = end.y;
 
             return (
               <g key={index} className="animate-fade-in" style={{ animationDelay: `${index * 200}ms` }}>
-                {/* Connecting Line */}
+                {/* Connecting Line - using unitless numbers */}
                 <path 
-                  d={`M ${x1} ${y1} C 50% ${y1}, 50% ${y2}, ${x2} ${y2}`}
+                  d={`M ${x1} ${y1} C 50 ${y1}, 50 ${y2}, ${x2} ${y2}`}
                   fill="none" 
                   stroke="#22d3ee" 
-                  strokeWidth="2" 
-                  strokeDasharray="5,5"
+                  strokeWidth="0.5" 
+                  strokeDasharray="1,1"
                   className="opacity-60 print:stroke-black print:opacity-100"
-                  filter="url(#glow)"
+                  // filter="url(#glow)" // Disabled glow to prevent potential rendering issues on some screens
                 >
                   <animate attributeName="stroke-dashoffset" from="100" to="0" dur="2s" repeatCount="indefinite" />
                 </path>

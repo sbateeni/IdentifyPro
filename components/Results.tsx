@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { ComparisonResult } from '../types';
-import { CheckCircle, XCircle, AlertTriangle, Activity, GitCompare, FileText, ShieldAlert, Printer, Microscope, Eye, Fingerprint, Link, Ruler, GitMerge, Minus, CircleDot, BadgeCheck, Scale, Gavel, Dna, FileWarning, Layers, Download, Move } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, Activity, GitCompare, FileText, ShieldAlert, Printer, Microscope, Eye, Fingerprint, Link as LinkIcon, Ruler, GitMerge, Minus, CircleDot, BadgeCheck, Scale, Gavel, Dna, FileWarning, Layers, Download, Move, Scan, Search, Maximize2, Minimize2, BoxSelect } from 'lucide-react';
 import VisualMatcher from './VisualMatcher';
 
 interface ResultsProps {
@@ -10,7 +11,7 @@ interface ResultsProps {
 }
 
 const Results: React.FC<ResultsProps> = ({ result, file1, file2 }) => {
-  const { qualityAgent, forgeryAgent, agentZeta, agentSigma, agentTheta, agentIota, agentOmega, agent1Analysis, agent2Analysis, comparisonAgent, finalResult, chainOfCustody } = result;
+  const { qualityAgent, forgeryAgent, agentZeta, agentSigma, agentTheta, agentIota, agentKappa, agentOmega, agent1Analysis, agent2Analysis, comparisonAgent, finalResult, chainOfCustody } = result;
 
   // Color logic
   let colorClass = "text-yellow-600 bg-yellow-50 border-yellow-200";
@@ -83,7 +84,7 @@ const Results: React.FC<ResultsProps> = ({ result, file1, file2 }) => {
       {chainOfCustody && (
         <div className="bg-slate-800 text-slate-300 p-4 rounded-xl text-xs font-mono shadow-inner animate-fade-up border border-slate-700">
           <div className="flex items-center gap-2 mb-2 text-slate-100 font-bold border-b border-slate-600 pb-2">
-            <Link className="w-4 h-4" />
+            <LinkIcon className="w-4 h-4" />
             DIGITAL CHAIN OF CUSTODY (سلسلة العهدة الرقمية)
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -127,12 +128,141 @@ const Results: React.FC<ResultsProps> = ({ result, file1, file2 }) => {
         </p>
       </div>
 
-      {/* AGENT IOTA: Visual Matcher (NEW) */}
+      {/* AGENT IOTA: Visual Matcher */}
       {agentIota && (
         <div className="animate-fade-up delay-100">
            <VisualMatcher data={agentIota} file1={file1} file2={file2} />
         </div>
       )}
+
+      {/* AGENT KAPPA: Scale & Subset Analyzer (New) */}
+      {agentKappa && (
+        <div className="bg-gradient-to-br from-slate-800 to-slate-900 text-white p-5 rounded-xl border border-slate-700 shadow-lg animate-fade-up delay-150 relative overflow-hidden">
+           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-400 to-cyan-500"></div>
+           <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4">
+             <h4 className="font-bold text-sm flex items-center gap-2">
+               <BoxSelect className="w-5 h-5 text-teal-400" />
+               Agent Kappa: محلل القياس والاحتواء (Scale & Subset)
+             </h4>
+             <span className={`text-xs font-bold px-2 py-1 rounded ${agentKappa.isSubset ? 'bg-teal-500/20 text-teal-300' : 'bg-slate-700 text-slate-400'}`}>
+               {agentKappa.relationship === 'subset_master' ? 'DETECTED: SUBSET RELATIONSHIP' : agentKappa.relationship.toUpperCase().replace('_', ' ')}
+             </span>
+           </div>
+
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-4 col-span-2">
+                 <p className="text-sm text-slate-300 leading-relaxed">
+                   "{agentKappa.explanation}"
+                 </p>
+                 <div className="bg-slate-800/50 p-3 rounded-lg border border-slate-700 flex items-center gap-4">
+                    <div className="text-center">
+                       <span className="block text-xs text-slate-400 mb-1">Scale Ratio</span>
+                       <div className="flex items-center gap-1 text-teal-400 font-mono font-bold text-lg">
+                          {agentKappa.scaleRatio > 1 ? <Maximize2 className="w-4 h-4" /> : agentKappa.scaleRatio < 1 ? <Minimize2 className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
+                          {agentKappa.scaleRatio}x
+                       </div>
+                    </div>
+                    <div className="h-8 w-px bg-slate-700 mx-2"></div>
+                    <div className="flex-1">
+                        <div className="flex justify-between text-xs text-slate-400 mb-1">
+                           <span>Overlap Percentage</span>
+                           <span>{agentKappa.overlapPercentage}%</span>
+                        </div>
+                        <div className="w-full bg-slate-700 rounded-full h-2.5 overflow-hidden">
+                           <div 
+                             className="bg-teal-500 h-2.5 rounded-full transition-all duration-1000 ease-out" 
+                             style={{ width: `${agentKappa.overlapPercentage}%` }}
+                           ></div>
+                        </div>
+                    </div>
+                 </div>
+              </div>
+              <div className="flex items-center justify-center bg-slate-800 rounded-lg border border-slate-700 p-4">
+                 {agentKappa.isSubset ? (
+                    <div className="text-center">
+                       <Layers className="w-10 h-10 text-teal-400 mx-auto mb-2 opacity-80" />
+                       <span className="text-xs text-teal-200 font-bold block">تطابق جزئي (Partial Print)</span>
+                       <span className="text-[10px] text-slate-500">البصمة هي جزء مكبر/مصغر من الأصل</span>
+                    </div>
+                 ) : (
+                    <div className="text-center">
+                       <BoxSelect className="w-10 h-10 text-slate-500 mx-auto mb-2 opacity-50" />
+                       <span className="text-xs text-slate-400 font-bold block">نطاق كامل</span>
+                       <span className="text-[10px] text-slate-600">البصمتان بنفس الأبعاد تقريباً</span>
+                    </div>
+                 )}
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* AGENTS ALPHA, BETA & GAMMA (Core Analysis) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-up delay-150">
+         {/* Agent Alpha */}
+         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-1 h-full bg-indigo-500"></div>
+            <h4 className="font-bold text-sm text-slate-800 mb-3 flex items-center gap-2">
+              <Fingerprint className="w-4 h-4 text-indigo-600" />
+              Agent Alpha: المصدر
+            </h4>
+            <div className="space-y-2 text-sm">
+               <div className="flex justify-between"><span className="text-slate-500">النمط:</span> <span className="font-bold">{agent1Analysis.patternType}</span></div>
+               <div className="flex justify-between"><span className="text-slate-500">هنري:</span> <span className="font-bold font-mono bg-slate-100 px-1 rounded">{agent1Analysis.henryClassification}</span></div>
+               <div className="flex justify-between"><span className="text-slate-500">الجودة:</span> <span className="font-bold text-green-600">{agent1Analysis.ridgeQuality}</span></div>
+               <div className="mt-2 pt-2 border-t border-slate-100">
+                  <span className="text-xs text-slate-400 block mb-1">الميزات الفريدة:</span>
+                  <div className="flex flex-wrap gap-1">
+                    {agent1Analysis.distinctiveFeatures.slice(0, 3).map((f, i) => (
+                      <span key={i} className="text-[10px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded">{f}</span>
+                    ))}
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         {/* Agent Gamma (Comparison) */}
+         <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-inner flex flex-col justify-center">
+            <h4 className="font-bold text-sm text-slate-800 mb-3 flex items-center gap-2 justify-center">
+              <GitCompare className="w-4 h-4 text-slate-600" />
+              Agent Gamma: المقارنة
+            </h4>
+            <div className="text-center space-y-3">
+               <div>
+                 <span className="text-xs text-slate-400 uppercase">نقاط مشتركة</span>
+                 <div className="text-2xl font-bold text-slate-700">{comparisonAgent.minutiaeMatch.commonPointsFound.length}</div>
+               </div>
+               <div>
+                  <span className="text-xs text-slate-400 uppercase">تطابق الأنماط</span>
+                  <div className="text-lg font-bold text-indigo-600">{comparisonAgent.patternMatch.score}%</div>
+               </div>
+               <p className="text-xs text-slate-500 italic border-t border-slate-200 pt-2 mt-1">
+                 "{comparisonAgent.patternMatch.explanation.substring(0, 60)}..."
+               </p>
+            </div>
+         </div>
+
+         {/* Agent Beta */}
+         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-1 h-full bg-purple-500"></div>
+            <h4 className="font-bold text-sm text-slate-800 mb-3 flex items-center gap-2">
+              <Search className="w-4 h-4 text-purple-600" />
+              Agent Beta: الهدف
+            </h4>
+            <div className="space-y-2 text-sm">
+               <div className="flex justify-between"><span className="text-slate-500">النمط:</span> <span className="font-bold">{agent2Analysis.patternType}</span></div>
+               <div className="flex justify-between"><span className="text-slate-500">هنري:</span> <span className="font-bold font-mono bg-slate-100 px-1 rounded">{agent2Analysis.henryClassification}</span></div>
+               <div className="flex justify-between"><span className="text-slate-500">الجودة:</span> <span className="font-bold text-green-600">{agent2Analysis.ridgeQuality}</span></div>
+               <div className="mt-2 pt-2 border-t border-slate-100">
+                  <span className="text-xs text-slate-400 block mb-1">الميزات الفريدة:</span>
+                  <div className="flex flex-wrap gap-1">
+                    {agent2Analysis.distinctiveFeatures.slice(0, 3).map((f, i) => (
+                      <span key={i} className="text-[10px] bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded">{f}</span>
+                    ))}
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
 
       {/* Agents Grid 1: Quality & Forgery */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-up delay-200">

@@ -60,6 +60,15 @@ export interface AnatomicalMapping {
   visualConclusion: string;
 }
 
+// NEW: Agent Kappa (Scale & Subset Analyzer)
+export interface ScaleAnalysis {
+  isSubset: boolean; // Is file2 a part of file1?
+  scaleRatio: number; // e.g., 1.0 = same, 2.0 = 2x zoom, 0.5 = zoomed out
+  overlapPercentage: number; // 0-100
+  relationship: 'identical' | 'subset_master' | 'partial_overlap' | 'no_overlap';
+  explanation: string;
+}
+
 // NEW: Agent Omega (Legal/Expert Witness)
 export interface LegalAssessment {
   admissibilityStatus: 'مقبول بقوة' | 'مقبول بحذر' | 'غير صالح قانونياً';
@@ -116,6 +125,9 @@ export interface ComparisonResult {
   };
   // Agent Iota (Visual Mapping)
   agentIota: AnatomicalMapping;
+
+  // Agent Kappa (Scale/Subset)
+  agentKappa: ScaleAnalysis;
   
   agent1Analysis: FingerprintAnalysis;
   agent2Analysis: FingerprintAnalysis;
