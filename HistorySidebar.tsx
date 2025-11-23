@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { X, Clock, Trash2, FileText, ChevronRight } from 'lucide-react';
 import { HistoryRecord } from '../types';

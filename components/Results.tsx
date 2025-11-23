@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ComparisonResult } from '../types';
-import { CheckCircle, XCircle, AlertTriangle, Activity, GitCompare, FileText, ShieldAlert, Printer, Microscope, Eye, Fingerprint, Link as LinkIcon, Ruler, GitMerge, Minus, CircleDot, BadgeCheck, Scale, Gavel, Dna, FileWarning, Layers, Download, Move, Scan, Search, Maximize2, Minimize2, BoxSelect } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, Activity, GitCompare, ShieldAlert, Printer, Microscope, Eye, Fingerprint, Link as LinkIcon, Ruler, GitMerge, Minus, CircleDot, BadgeCheck, Scale, Gavel, Dna, Layers, Download, Move, BoxSelect, Maximize2, Minimize2, Sparkles, Box, Calculator, Timer, Hand, Network } from 'lucide-react';
 import VisualMatcher from './VisualMatcher';
 
 interface ResultsProps {
@@ -11,7 +11,13 @@ interface ResultsProps {
 }
 
 const Results: React.FC<ResultsProps> = ({ result, file1, file2 }) => {
-  const { qualityAgent, forgeryAgent, agentZeta, agentSigma, agentTheta, agentIota, agentKappa, agentOmega, agent1Analysis, agent2Analysis, comparisonAgent, finalResult, chainOfCustody } = result;
+  const { 
+    agentDelta, agentLambda, agentRho, agentEpsilon, 
+    agentAlpha, agentBeta, agentZeta, agentSigma, 
+    agentTheta, agentNu, agentKappa, 
+    agentGamma, agentIota, agentPsi, agentPhi, agentOmega, 
+    finalResult, chainOfCustody 
+  } = result;
 
   // Color logic
   let colorClass = "text-yellow-600 bg-yellow-50 border-yellow-200";
@@ -33,7 +39,7 @@ const Results: React.FC<ResultsProps> = ({ result, file1, file2 }) => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(result, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", `RidgeAI_Report_${chainOfCustody.timestamp}.json`);
+    downloadAnchorNode.setAttribute("download", `RidgeAI_LabReport_${chainOfCustody.timestamp}.json`);
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
@@ -58,7 +64,7 @@ const Results: React.FC<ResultsProps> = ({ result, file1, file2 }) => {
       
       {/* Header for Print Only */}
       <div className="print-header">
-        <div className="text-2xl font-bold">RidgeAI Forensic Report</div>
+        <div className="text-2xl font-bold">RidgeAI Global Forensic Laboratory</div>
         <div className="text-sm text-slate-500">Case ID: {chainOfCustody?.timestamp || Date.now()}</div>
       </div>
 
@@ -128,21 +134,75 @@ const Results: React.FC<ResultsProps> = ({ result, file1, file2 }) => {
         </p>
       </div>
 
-      {/* AGENT IOTA: Visual Matcher */}
+      {/* SECTION 1: PRE-PROCESSING LAB (Lambda & Rho) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-up delay-100">
+        
+        {/* Agent Lambda (Enhancement) */}
+        <div className="bg-slate-900 text-white p-5 rounded-xl border border-slate-700 relative overflow-hidden">
+           <div className="absolute top-0 left-0 w-1 h-full bg-cyan-500"></div>
+           <h4 className="font-bold text-sm mb-4 flex items-center gap-2 text-cyan-400">
+             <Sparkles className="w-4 h-4" />
+             Agent Lambda: التحسين الجنائي (Image Enhancer)
+           </h4>
+           <div className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-4">
+                 <div>
+                    <span className="block text-slate-500 mb-1">Source Filters:</span>
+                    <div className="flex flex-wrap gap-1">
+                       {agentLambda.file1.appliedFilters.map((f, i) => <span key={i} className="bg-slate-800 px-1.5 py-0.5 rounded border border-slate-600">{f}</span>)}
+                    </div>
+                 </div>
+                 <div>
+                    <span className="block text-slate-500 mb-1">Target Filters:</span>
+                    <div className="flex flex-wrap gap-1">
+                       {agentLambda.file2.appliedFilters.map((f, i) => <span key={i} className="bg-slate-800 px-1.5 py-0.5 rounded border border-slate-600">{f}</span>)}
+                    </div>
+                 </div>
+              </div>
+              <div className="flex items-center justify-between border-t border-slate-800 pt-2">
+                 <span className="text-slate-400">تحسن الوضوح (Clarity Gain):</span>
+                 <span className="text-cyan-300 font-bold">+{Math.round((agentLambda.file1.clarityGain + agentLambda.file2.clarityGain)/2)}%</span>
+              </div>
+           </div>
+        </div>
+
+        {/* Agent Rho (Surface) */}
+        <div className="bg-slate-900 text-white p-5 rounded-xl border border-slate-700 relative overflow-hidden">
+           <div className="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
+           <h4 className="font-bold text-sm mb-4 flex items-center gap-2 text-orange-400">
+             <Box className="w-4 h-4" />
+             Agent Rho: تحليل السطح (Surface & Substrate)
+           </h4>
+           <div className="grid grid-cols-2 gap-4 text-xs">
+              <div className="space-y-2">
+                 <span className="text-slate-500 block uppercase tracking-widest text-[10px]">Source File</span>
+                 <div className="flex justify-between"><span className="text-slate-400">المادة:</span> <span>{agentRho.file1.surfaceMaterial}</span></div>
+                 <div className="flex justify-between"><span className="text-slate-400">تشويش الخلفية:</span> <span>{agentRho.file1.backgroundNoiseType}</span></div>
+              </div>
+              <div className="space-y-2 border-l border-slate-800 pl-4">
+                 <span className="text-slate-500 block uppercase tracking-widest text-[10px]">Target File</span>
+                 <div className="flex justify-between"><span className="text-slate-400">المادة:</span> <span>{agentRho.file2.surfaceMaterial}</span></div>
+                 <div className="flex justify-between"><span className="text-slate-400">تشويش الخلفية:</span> <span>{agentRho.file2.backgroundNoiseType}</span></div>
+              </div>
+           </div>
+        </div>
+      </div>
+
+      {/* SECTION 2: VISUAL MAPPING (IOTA) */}
       {agentIota && (
         <div className="animate-fade-up delay-100">
            <VisualMatcher data={agentIota} file1={file1} file2={file2} />
         </div>
       )}
 
-      {/* AGENT KAPPA: Scale & Subset Analyzer (New) */}
+      {/* SECTION 3: KAPPA (Scale) */}
       {agentKappa && (
         <div className="bg-gradient-to-br from-slate-800 to-slate-900 text-white p-5 rounded-xl border border-slate-700 shadow-lg animate-fade-up delay-150 relative overflow-hidden">
            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-400 to-cyan-500"></div>
            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4">
              <h4 className="font-bold text-sm flex items-center gap-2">
                <BoxSelect className="w-5 h-5 text-teal-400" />
-               Agent Kappa: محلل القياس والاحتواء (Scale & Subset)
+               Agent Kappa: القياس والاحتواء (Scale & Subset)
              </h4>
              <span className={`text-xs font-bold px-2 py-1 rounded ${agentKappa.isSubset ? 'bg-teal-500/20 text-teal-300' : 'bg-slate-700 text-slate-400'}`}>
                {agentKappa.relationship === 'subset_master' ? 'DETECTED: SUBSET RELATIONSHIP' : agentKappa.relationship.toUpperCase().replace('_', ' ')}
@@ -196,9 +256,8 @@ const Results: React.FC<ResultsProps> = ({ result, file1, file2 }) => {
         </div>
       )}
 
-      {/* AGENTS ALPHA, BETA & GAMMA (Core Analysis) */}
+      {/* SECTION 4: CORE ANALYSIS (Alpha, Beta, Gamma) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-up delay-150">
-         {/* Agent Alpha */}
          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-1 h-full bg-indigo-500"></div>
             <h4 className="font-bold text-sm text-slate-800 mb-3 flex items-center gap-2">
@@ -206,21 +265,11 @@ const Results: React.FC<ResultsProps> = ({ result, file1, file2 }) => {
               Agent Alpha: المصدر
             </h4>
             <div className="space-y-2 text-sm">
-               <div className="flex justify-between"><span className="text-slate-500">النمط:</span> <span className="font-bold">{agent1Analysis.patternType}</span></div>
-               <div className="flex justify-between"><span className="text-slate-500">هنري:</span> <span className="font-bold font-mono bg-slate-100 px-1 rounded">{agent1Analysis.henryClassification}</span></div>
-               <div className="flex justify-between"><span className="text-slate-500">الجودة:</span> <span className="font-bold text-green-600">{agent1Analysis.ridgeQuality}</span></div>
-               <div className="mt-2 pt-2 border-t border-slate-100">
-                  <span className="text-xs text-slate-400 block mb-1">الميزات الفريدة:</span>
-                  <div className="flex flex-wrap gap-1">
-                    {agent1Analysis.distinctiveFeatures.slice(0, 3).map((f, i) => (
-                      <span key={i} className="text-[10px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded">{f}</span>
-                    ))}
-                  </div>
-               </div>
+               <div className="flex justify-between"><span className="text-slate-500">النمط:</span> <span className="font-bold">{agentAlpha.patternType}</span></div>
+               <div className="flex justify-between"><span className="text-slate-500">هنري:</span> <span className="font-bold font-mono bg-slate-100 px-1 rounded">{agentAlpha.henryClassification}</span></div>
             </div>
          </div>
 
-         {/* Agent Gamma (Comparison) */}
          <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-inner flex flex-col justify-center">
             <h4 className="font-bold text-sm text-slate-800 mb-3 flex items-center gap-2 justify-center">
               <GitCompare className="w-4 h-4 text-slate-600" />
@@ -229,45 +278,29 @@ const Results: React.FC<ResultsProps> = ({ result, file1, file2 }) => {
             <div className="text-center space-y-3">
                <div>
                  <span className="text-xs text-slate-400 uppercase">نقاط مشتركة</span>
-                 <div className="text-2xl font-bold text-slate-700">{comparisonAgent.minutiaeMatch.commonPointsFound.length}</div>
-               </div>
-               <div>
-                  <span className="text-xs text-slate-400 uppercase">تطابق الأنماط</span>
-                  <div className="text-lg font-bold text-indigo-600">{comparisonAgent.patternMatch.score}%</div>
+                 <div className="text-2xl font-bold text-slate-700">{agentGamma.minutiaeMatch.commonPointsFound.length}</div>
                </div>
                <p className="text-xs text-slate-500 italic border-t border-slate-200 pt-2 mt-1">
-                 "{comparisonAgent.patternMatch.explanation.substring(0, 60)}..."
+                 "{agentGamma.patternMatch.explanation.substring(0, 60)}..."
                </p>
             </div>
          </div>
 
-         {/* Agent Beta */}
          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-1 h-full bg-purple-500"></div>
             <h4 className="font-bold text-sm text-slate-800 mb-3 flex items-center gap-2">
-              <Search className="w-4 h-4 text-purple-600" />
+              <Fingerprint className="w-4 h-4 text-purple-600" />
               Agent Beta: الهدف
             </h4>
             <div className="space-y-2 text-sm">
-               <div className="flex justify-between"><span className="text-slate-500">النمط:</span> <span className="font-bold">{agent2Analysis.patternType}</span></div>
-               <div className="flex justify-between"><span className="text-slate-500">هنري:</span> <span className="font-bold font-mono bg-slate-100 px-1 rounded">{agent2Analysis.henryClassification}</span></div>
-               <div className="flex justify-between"><span className="text-slate-500">الجودة:</span> <span className="font-bold text-green-600">{agent2Analysis.ridgeQuality}</span></div>
-               <div className="mt-2 pt-2 border-t border-slate-100">
-                  <span className="text-xs text-slate-400 block mb-1">الميزات الفريدة:</span>
-                  <div className="flex flex-wrap gap-1">
-                    {agent2Analysis.distinctiveFeatures.slice(0, 3).map((f, i) => (
-                      <span key={i} className="text-[10px] bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded">{f}</span>
-                    ))}
-                  </div>
-               </div>
+               <div className="flex justify-between"><span className="text-slate-500">النمط:</span> <span className="font-bold">{agentBeta.patternType}</span></div>
+               <div className="flex justify-between"><span className="text-slate-500">هنري:</span> <span className="font-bold font-mono bg-slate-100 px-1 rounded">{agentBeta.henryClassification}</span></div>
             </div>
          </div>
       </div>
 
-      {/* Agents Grid 1: Quality & Forgery */}
+      {/* SECTION 5: QUALITY & SECURITY (Delta, Epsilon) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-up delay-200">
-        
-        {/* Quality Agent Delta */}
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
           <h4 className="font-bold text-sm text-slate-800 mb-4 flex items-center gap-2">
             <Microscope className="w-4 h-4 text-blue-600" />
@@ -276,25 +309,19 @@ const Results: React.FC<ResultsProps> = ({ result, file1, file2 }) => {
           <div className="space-y-4">
              <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-500">البصمة المرجعية:</span>
-                <span className={`font-bold px-2 py-0.5 rounded ${qualityAgent.file1.qualityScore > 70 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                  {qualityAgent.file1.qualityScore}/100
+                <span className={`font-bold px-2 py-0.5 rounded ${agentDelta.file1.qualityScore > 70 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                  {agentDelta.file1.qualityScore}/100
                 </span>
              </div>
              <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-500">بصمة المشتبه:</span>
-                <span className={`font-bold px-2 py-0.5 rounded ${qualityAgent.file2.qualityScore > 70 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                  {qualityAgent.file2.qualityScore}/100
+                <span className={`font-bold px-2 py-0.5 rounded ${agentDelta.file2.qualityScore > 70 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                  {agentDelta.file2.qualityScore}/100
                 </span>
              </div>
-             {(qualityAgent.file1.issues.length > 0 || qualityAgent.file2.issues.length > 0) && (
-               <div className="text-xs text-slate-500 bg-slate-50 p-2 rounded border border-slate-100">
-                 <strong>ملاحظات الجودة:</strong> {qualityAgent.file1.recommendation}
-               </div>
-             )}
           </div>
         </div>
 
-        {/* Forgery Agent Epsilon */}
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
           <h4 className="font-bold text-sm text-slate-800 mb-4 flex items-center gap-2">
             <Eye className="w-4 h-4 text-purple-600" />
@@ -304,184 +331,171 @@ const Results: React.FC<ResultsProps> = ({ result, file1, file2 }) => {
              <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-500">موثوقية المصدر:</span>
                 <div className="flex items-center gap-2">
-                  {forgeryAgent.file1.isAuthentic && <BadgeCheck className="w-4 h-4 text-blue-500" />}
-                  <span className="font-bold">{forgeryAgent.file1.authenticityScore}%</span>
+                  {agentEpsilon.file1.isAuthentic && <BadgeCheck className="w-4 h-4 text-blue-500" />}
+                  <span className="font-bold">{agentEpsilon.file1.authenticityScore}%</span>
                 </div>
              </div>
              <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-500">موثوقية الهدف:</span>
                 <div className="flex items-center gap-2">
-                   {forgeryAgent.file2.isAuthentic && <BadgeCheck className="w-4 h-4 text-blue-500" />}
-                   <span className="font-bold">{forgeryAgent.file2.authenticityScore}%</span>
+                   {agentEpsilon.file2.isAuthentic && <BadgeCheck className="w-4 h-4 text-blue-500" />}
+                   <span className="font-bold">{agentEpsilon.file2.authenticityScore}%</span>
                 </div>
              </div>
-             {forgeryAgent.file1.riskFactors.length > 0 && (
-                <div className="text-xs text-red-600 bg-red-50 p-2 rounded border border-red-100">
-                  <strong>مخاطر:</strong> {forgeryAgent.file1.riskFactors.join(', ')}
-                </div>
-             )}
           </div>
         </div>
-
       </div>
 
-      {/* Agents Grid 2: Zeta & Sigma (Statistics & Biology) */}
+      {/* SECTION 6: ADVANCED FORENSICS (Psi, Phi, Nu, Zeta, Sigma, Theta) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-up delay-200">
         
+        {/* Agent Psi (Multi-Linker) - NEW */}
+        {agentPsi && (
+          <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-5 rounded-xl border border-indigo-700 shadow-sm">
+             <h4 className="font-bold text-sm text-white mb-4 flex items-center gap-2">
+                <Network className="w-4 h-4 text-blue-300" />
+                Agent Psi: الربط المتعدد (Identity Crosslinker)
+             </h4>
+             <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center">
+                   <span className="text-blue-200 text-xs">احتمالية المصدر الواحد:</span>
+                   <span className={`font-bold px-2 py-0.5 rounded ${agentPsi.isSameSource ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+                     {agentPsi.isSameSource ? 'CONFIRMED' : 'REJECTED'}
+                   </span>
+                </div>
+                <div className="flex justify-between items-center">
+                   <span className="text-blue-200 text-xs">ثقة الربط (Linkage):</span>
+                   <span className="font-mono font-bold text-lg text-white">{agentPsi.linkageConfidence}%</span>
+                </div>
+                <p className="text-xs text-blue-100 italic opacity-80 mt-2 bg-white/10 p-2 rounded">
+                  "{agentPsi.consistencyCheck}"
+                </p>
+             </div>
+          </div>
+        )}
+
+        {/* Agent Phi (Bayesian) */}
+        <div className="bg-slate-50 p-5 rounded-xl border border-indigo-100 shadow-sm border-l-4 border-l-indigo-600">
+           <h4 className="font-bold text-sm text-indigo-800 mb-4 flex items-center gap-2">
+              <Calculator className="w-4 h-4" />
+              Agent Phi: الإحصاء البايزي (Bayesian Evidence)
+           </h4>
+           <div className="space-y-3">
+              <div className="flex justify-between items-center text-sm">
+                 <span className="text-slate-500">قوة الدليل الإحصائية:</span>
+                 <span className="font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded">{agentPhi.statisticalStrength}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                 <span className="text-slate-500">نسبة الاحتمالية (LR):</span>
+                 <span className="font-mono font-bold">{agentPhi.likelihoodRatio.toLocaleString()}</span>
+              </div>
+              <div className="bg-white p-2 rounded border border-slate-100 text-xs text-slate-600 mt-2">
+                 <strong>PRC (Random Correspondence):</strong> {agentPhi.randomCorrespondenceProbability}
+              </div>
+           </div>
+        </div>
+
+        {/* Agent Nu (Action) */}
+        <div className="bg-slate-50 p-5 rounded-xl border border-orange-100 shadow-sm border-l-4 border-l-orange-600">
+           <h4 className="font-bold text-sm text-orange-800 mb-4 flex items-center gap-2">
+              <Timer className="w-4 h-4" />
+              Agent Nu: محاكي الحركة والزمن (Timeline)
+           </h4>
+           <div className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-4">
+                 <div>
+                    <span className="block text-slate-400 mb-1">Target Action</span>
+                    <div className="font-bold text-slate-800 flex items-center gap-1">
+                       <Hand className="w-3 h-3" />
+                       {agentNu.file2.estimatedAction}
+                    </div>
+                 </div>
+                 <div>
+                    <span className="block text-slate-400 mb-1">Orientation</span>
+                    <div className="font-bold text-slate-800">{agentNu.file2.handOrientation}</div>
+                 </div>
+              </div>
+              <div className="border-t border-slate-200 pt-2 mt-2 flex justify-between">
+                 <span className="text-slate-500">تقدير الزمن:</span>
+                 <span className="font-bold text-orange-700">{agentNu.file2.timeDecayEstimate}</span>
+              </div>
+           </div>
+        </div>
+
         {/* Agent Zeta (Galton) */}
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-           <h4 className="font-bold text-sm text-slate-800 mb-4 flex items-center gap-2 justify-between">
-              <div className="flex items-center gap-2">
-                <Ruler className="w-4 h-4 text-orange-600" />
-                Agent Zeta: تفاصيل غالتون (إحصائي)
-              </div>
-              <div className="flex text-[10px] gap-2">
-                <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
-                <span className="w-2 h-2 rounded-full bg-purple-600"></span>
-              </div>
-            </h4>
-            
-            {agentZeta ? (
-               <div className="grid grid-cols-2 gap-3">
-                 <StatBox label="تفرعات" value1={agentZeta.file1.bifurcations} value2={agentZeta.file2.bifurcations} icon={GitMerge} color="text-blue-500" />
-                 <StatBox label="نهايات" value1={agentZeta.file1.ridgeEndings} value2={agentZeta.file2.ridgeEndings} icon={Minus} color="text-red-500" />
-                 <StatBox label="نقاط/جزر" value1={agentZeta.file1.dots} value2={agentZeta.file2.dots} icon={CircleDot} color="text-green-500" />
-                 <div className="flex flex-col items-center justify-center bg-slate-50 p-2 rounded-lg border border-slate-100">
-                    <span className="text-[10px] text-slate-500 mb-1">التعقيد</span>
-                    <span className="text-xs font-bold">{agentZeta.file1.overallComplexity}</span>
-                 </div>
-               </div>
-            ) : null}
+           <h4 className="font-bold text-sm text-slate-800 mb-4 flex items-center gap-2">
+              <Ruler className="w-4 h-4 text-orange-600" />
+              Agent Zeta: تفاصيل غالتون (Minutiae)
+           </h4>
+           <div className="grid grid-cols-2 gap-3">
+             <StatBox label="تفرعات" value1={agentZeta.file1.bifurcations} value2={agentZeta.file2.bifurcations} icon={GitMerge} color="text-blue-500" />
+             <StatBox label="نهايات" value1={agentZeta.file1.ridgeEndings} value2={agentZeta.file2.ridgeEndings} icon={Minus} color="text-red-500" />
+           </div>
         </div>
 
         {/* Agent Sigma (Biological) */}
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-           <h4 className="font-bold text-sm text-slate-800 mb-4 flex items-center gap-2 justify-between">
-              <div className="flex items-center gap-2">
-                <Dna className="w-4 h-4 text-pink-600" />
-                Agent Sigma: المحلل البيولوجي (Level 3)
-              </div>
-            </h4>
-            
-            {agentSigma ? (
-               <div className="space-y-3">
-                 <div className="flex justify-between items-center text-sm border-b border-slate-50 pb-2">
-                    <span className="text-slate-500">حواف الخطوط (Edgeoscopy):</span>
-                    <span className="font-medium bg-pink-50 text-pink-700 px-2 py-0.5 rounded text-xs">{agentSigma.file1.edgeShape}</span>
-                 </div>
-                 <div className="flex justify-between items-center text-sm border-b border-slate-50 pb-2">
-                    <span className="text-slate-500">المسام (Poroscopy):</span>
-                    <span className="font-medium flex items-center gap-1">
-                      {agentSigma.file1.poresVisible ? <CheckCircle className="w-3 h-3 text-green-500" /> : <XCircle className="w-3 h-3 text-slate-300" />}
-                      <span className="text-xs">{agentSigma.file1.poreCountEstimate} مسام مقدرة</span>
-                    </span>
-                 </div>
-                 <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                       <span className="block text-slate-400 mb-1">ندوب دائمة:</span>
-                       {agentSigma.file1.scars.length > 0 ? agentSigma.file1.scars.join(', ') : 'لا يوجد'}
-                    </div>
-                    <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                       <span className="block text-slate-400 mb-1">تجاعيد مؤقتة:</span>
-                       {agentSigma.file1.creases.length > 0 ? agentSigma.file1.creases.join(', ') : 'لا يوجد'}
-                    </div>
-                 </div>
-               </div>
-            ) : null}
+           <h4 className="font-bold text-sm text-slate-800 mb-4 flex items-center gap-2">
+              <Dna className="w-4 h-4 text-pink-600" />
+              Agent Sigma: المحلل البيولوجي (Level 3)
+           </h4>
+           <div className="space-y-2 text-sm">
+             <div className="flex justify-between"><span className="text-slate-500">Edgeoscopy:</span> <span className="font-bold">{agentSigma.file1.edgeShape}</span></div>
+             <div className="flex justify-between"><span className="text-slate-500">Poroscopy:</span> <span className="font-bold">{agentSigma.file1.poreCountEstimate} pores</span></div>
+           </div>
         </div>
 
-      </div>
-
-      {/* Agents Grid 3: Theta (Distortion) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-up delay-200">
+        {/* Agent Theta (Distortion) */}
          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm col-span-1 md:col-span-2">
             <h4 className="font-bold text-sm text-slate-800 mb-4 flex items-center gap-2">
               <Move className="w-4 h-4 text-cyan-600" />
-              Agent Theta: محلل التشويه الميكانيكي (Distortion Analysis)
+              Agent Theta: محلل التشويه الميكانيكي
             </h4>
-            
-            {agentTheta && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                {/* File 1 Analysis */}
-                <div className="space-y-2 border-l border-slate-100 pl-4 md:border-l-0 md:border-r md:pr-4 md:pl-0">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">المصدر (File 1)</span>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-slate-600">مستوى الضغط:</span>
-                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${agentTheta.file1.pressureLevel === 'شديد' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                      {agentTheta.file1.pressureLevel}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-slate-600">الالتواء (Torsion):</span>
-                    <span>{agentTheta.file1.torsionDetected ? 'موجود ⚠️' : 'غير موجود'}</span>
-                  </div>
-                  <div className="text-xs text-slate-500">
-                    <strong>المناطق المتأثرة:</strong> {agentTheta.file1.affectedZones.length > 0 ? agentTheta.file1.affectedZones.join(', ') : 'لا يوجد'}
-                  </div>
-                </div>
-
-                {/* File 2 Analysis */}
-                <div className="space-y-2">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">الهدف (File 2)</span>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-slate-600">مستوى الضغط:</span>
-                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${agentTheta.file2.pressureLevel === 'شديد' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                      {agentTheta.file2.pressureLevel}
-                    </span>
-                  </div>
-                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-slate-600">الالتواء (Torsion):</span>
-                    <span>{agentTheta.file2.torsionDetected ? 'موجود ⚠️' : 'غير موجود'}</span>
-                  </div>
-                   <div className="text-xs text-slate-500">
-                    <strong>المناطق المتأثرة:</strong> {agentTheta.file2.affectedZones.length > 0 ? agentTheta.file2.affectedZones.join(', ') : 'لا يوجد'}
-                  </div>
-                </div>
-
-              </div>
-            )}
+            <div className="grid grid-cols-2 gap-4 text-sm">
+               <div className="flex justify-between"><span className="text-slate-500">Pressure (File 2):</span> <span className="font-bold">{agentTheta.file2.pressureLevel}</span></div>
+               <div className="flex justify-between"><span className="text-slate-500">Torsion:</span> <span className="font-bold">{agentTheta.file2.torsionDetected ? "Yes" : "No"}</span></div>
+            </div>
          </div>
+
       </div>
 
-      {/* Agents Grid 4: Omega (Legal) */}
+      {/* SECTION 7: OMEGA (LEGAL FINAL) */}
       <div className="bg-slate-900 text-white p-6 rounded-xl shadow-lg border border-slate-700 animate-fade-up delay-300">
         <h4 className="font-bold text-sm mb-4 flex items-center gap-2 text-indigo-300">
           <Gavel className="w-5 h-5" />
           Agent Omega: المقيم القانوني (Expert Witness)
         </h4>
 
-        {agentOmega && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2 space-y-4">
-              <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
-                <span className="text-xs text-slate-400 uppercase tracking-widest block mb-2">بيان الخبير الرسمي</span>
-                <p className="text-sm leading-relaxed font-medium text-slate-200">
-                  "{agentOmega.finalExpertStatement}"
-                </p>
-              </div>
-              <div className="text-xs text-red-300">
-                <strong>ملاحظات للدفاع (Risk):</strong> {agentOmega.defenseNotes}
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2 space-y-4">
+            <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+              <span className="text-xs text-slate-400 uppercase tracking-widest block mb-2">بيان الخبير الرسمي</span>
+              <p className="text-sm leading-relaxed font-medium text-slate-200">
+                "{agentOmega.finalExpertStatement}"
+              </p>
             </div>
-
-            <div className="flex flex-col gap-3 justify-center">
-              <div className="text-center bg-slate-800 p-3 rounded-lg border border-slate-700">
-                <span className="block text-xs text-slate-400 mb-1">حالة القبول القانوني</span>
-                <span className={`font-bold text-sm ${agentOmega.admissibilityStatus === 'غير صالح قانونياً' ? 'text-red-400' : 'text-green-400'}`}>
-                  {agentOmega.admissibilityStatus}
-                </span>
-              </div>
-              <div className="text-center bg-slate-800 p-3 rounded-lg border border-slate-700">
-                 <span className="block text-xs text-slate-400 mb-1">درجة الثقة القانونية</span>
-                 <div className="flex items-center justify-center gap-2">
-                   <Scale className="w-4 h-4 text-indigo-400" />
-                   <span className="font-mono font-bold text-lg">{agentOmega.legalConfidenceScore}%</span>
-                 </div>
-              </div>
+            <div className="text-xs text-red-300">
+              <strong>ملاحظات للدفاع (Risk):</strong> {agentOmega.defenseNotes}
             </div>
           </div>
-        )}
+
+          <div className="flex flex-col gap-3 justify-center">
+            <div className="text-center bg-slate-800 p-3 rounded-lg border border-slate-700">
+              <span className="block text-xs text-slate-400 mb-1">حالة القبول القانوني</span>
+              <span className={`font-bold text-sm ${agentOmega.admissibilityStatus === 'غير صالح قانونياً' ? 'text-red-400' : 'text-green-400'}`}>
+                {agentOmega.admissibilityStatus}
+              </span>
+            </div>
+            <div className="text-center bg-slate-800 p-3 rounded-lg border border-slate-700">
+               <span className="block text-xs text-slate-400 mb-1">درجة الثقة القانونية</span>
+               <div className="flex items-center justify-center gap-2">
+                 <Scale className="w-4 h-4 text-indigo-400" />
+                 <span className="font-mono font-bold text-lg">{agentOmega.legalConfidenceScore}%</span>
+               </div>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>

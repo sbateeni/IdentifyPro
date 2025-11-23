@@ -28,7 +28,7 @@ export interface MinutiaeStats {
   overallComplexity: 'عالية' | 'متوسطة' | 'منخفضة';
 }
 
-// NEW: Agent Sigma (Biological/Level 3 Details)
+// Agent Sigma (Biological/Level 3 Details)
 export interface BiologicalAnalysis {
   poresVisible: boolean;
   poreCountEstimate: number; // Poroscopy
@@ -37,7 +37,7 @@ export interface BiologicalAnalysis {
   creases: string[]; // Temporary
 }
 
-// NEW: Agent Theta (Distortion & Mechanical)
+// Agent Theta (Distortion & Mechanical)
 export interface DistortionAnalysis {
   pressureLevel: 'خفيف' | 'متوسط' | 'شديد';
   torsionDetected: boolean; // Is there twisting?
@@ -46,7 +46,7 @@ export interface DistortionAnalysis {
   affectedZones: string[]; // Zones like "Central Core", "Upper Delta"
 }
 
-// NEW: Agent Iota (Visual Anatomical Mapping)
+// Agent Iota (Visual Anatomical Mapping)
 export interface AnatomicalPoint {
   label: string; // e.g., "Core Bifurcation"
   zone1: 'top-left' | 'top-center' | 'top-right' | 'middle-left' | 'center' | 'middle-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
@@ -60,7 +60,7 @@ export interface AnatomicalMapping {
   visualConclusion: string;
 }
 
-// NEW: Agent Kappa (Scale & Subset Analyzer)
+// Agent Kappa (Scale & Subset Analyzer)
 export interface ScaleAnalysis {
   isSubset: boolean; // Is file2 a part of file1?
   scaleRatio: number; // e.g., 1.0 = same, 2.0 = 2x zoom, 0.5 = zoomed out
@@ -69,7 +69,45 @@ export interface ScaleAnalysis {
   explanation: string;
 }
 
-// NEW: Agent Omega (Legal/Expert Witness)
+// Agent Lambda (Forensic Enhancer)
+export interface ForensicEnhancement {
+  appliedFilters: string[]; // e.g., "CLAHE", "Gabor Filter", "FFT"
+  clarityGain: number; // Estimated percentage of improvement
+  restoredRegions: string[]; // Areas where details were recovered
+  originalNoiseLevel: 'Low' | 'Medium' | 'High';
+}
+
+// Agent Rho (Surface/Substrate)
+export interface SurfaceAnalysis {
+  surfaceMaterial: string; // e.g., "Glass", "Paper", "Tape", "Skin"
+  textureInterference: 'None' | 'Low' | 'High';
+  backgroundNoiseType: string; // e.g., "Grainy", "Patterned"
+}
+
+// Agent Phi (Bayesian Stats)
+export interface BayesianAnalysis {
+  randomCorrespondenceProbability: string; // e.g., "1 in 10 Billion"
+  likelihoodRatio: number; // Numeric ratio
+  statisticalStrength: 'Conclusive' | 'Very Strong' | 'Strong' | 'Moderate' | 'Weak';
+}
+
+// Agent Nu (Action/Timeline)
+export interface ActionReconstruction {
+  estimatedAction: string; // e.g., "Grasping", "Pushing", "Touching"
+  handOrientation: string; // e.g., "Vertical", "Angled 45deg"
+  timeDecayEstimate: string; // e.g., "Fresh (<24h)", "Old"
+  pressureDistribution: string; // Description of force
+}
+
+// NEW: Agent Psi (Multi-Fingerprint Crosslinker)
+export interface CrossLinkingAnalysis {
+  isSameSource: boolean; // Does the agent believe they are from the same biological entity?
+  crossSurfaceMatch: boolean; // Do they match despite different surfaces?
+  linkageConfidence: number; // 0-100
+  consistencyCheck: string; // e.g. "Consistent ridge flow across surfaces"
+}
+
+// Agent Omega (Legal/Expert Witness)
 export interface LegalAssessment {
   admissibilityStatus: 'مقبول بقوة' | 'مقبول بحذر' | 'غير صالح قانونياً';
   legalConfidenceScore: number; // 0-100
@@ -100,39 +138,35 @@ export interface ChainOfCustody {
 
 export interface ComparisonResult {
   chainOfCustody: ChainOfCustody;
-  qualityAgent: {
-    file1: QualityAnalysis;
-    file2: QualityAnalysis;
-  };
-  forgeryAgent: {
-    file1: ForgeryAnalysis;
-    file2: ForgeryAnalysis;
-  };
-  // Agent Zeta for Galton Details
-  agentZeta: {
-    file1: MinutiaeStats;
-    file2: MinutiaeStats;
-  };
-  // Agent Sigma (Biological)
-  agentSigma: {
-    file1: BiologicalAnalysis;
-    file2: BiologicalAnalysis;
-  };
-  // Agent Theta (Distortion)
-  agentTheta: {
-    file1: DistortionAnalysis;
-    file2: DistortionAnalysis;
-  };
-  // Agent Iota (Visual Mapping)
-  agentIota: AnatomicalMapping;
-
-  // Agent Kappa (Scale/Subset)
-  agentKappa: ScaleAnalysis;
   
-  agent1Analysis: FingerprintAnalysis;
-  agent2Analysis: FingerprintAnalysis;
-  comparisonAgent: DetailedComparison;
-  // Agent Omega (Legal)
+  // Pre-processing Agents
+  agentDelta: { file1: QualityAnalysis; file2: QualityAnalysis; }; // Quality
+  agentLambda: { file1: ForensicEnhancement; file2: ForensicEnhancement; }; // Enhancement
+  agentRho: { file1: SurfaceAnalysis; file2: SurfaceAnalysis; }; // Surface
+
+  // Security
+  agentEpsilon: { file1: ForgeryAnalysis; file2: ForgeryAnalysis; }; // Forgery
+
+  // Core Analysis Agents
+  agentAlpha: FingerprintAnalysis; // Source
+  agentBeta: FingerprintAnalysis; // Target
+  agentZeta: { file1: MinutiaeStats; file2: MinutiaeStats; }; // Galton
+  agentSigma: { file1: BiologicalAnalysis; file2: BiologicalAnalysis; }; // Level 3
+
+  // Mechanical & Context Agents
+  agentTheta: { file1: DistortionAnalysis; file2: DistortionAnalysis; }; // Distortion
+  agentNu: { file1: ActionReconstruction; file2: ActionReconstruction; }; // Action/Timeline
+  agentKappa: ScaleAnalysis; // Scale/Subset
+
+  // Comparison Agents
+  agentGamma: DetailedComparison; // Text Comparison
+  agentIota: AnatomicalMapping; // Visual Mapping
+  
+  // Advanced Stats & Linking
+  agentPhi: BayesianAnalysis; // Bayesian Stats
+  agentPsi: CrossLinkingAnalysis; // Crosslinker (Agent 16)
+
+  // Final Legal
   agentOmega: LegalAssessment;
   
   finalResult: {

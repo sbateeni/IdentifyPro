@@ -40,7 +40,7 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
     // 2. Try to get from IndexedDB
     let apiKey = await getApiKey();
     
-    // 3. Fallback to Environment Variable (Useful for Vercel/Local dev)
+    // 3. Fallback to Environment Variable
     if (!apiKey && typeof process !== 'undefined' && process.env.API_KEY) {
       apiKey = process.env.API_KEY;
     }
@@ -49,237 +49,139 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
       throw new Error("مفتاح API غير موجود. يرجى إضافته من قائمة الإعدادات.");
     }
 
-    // Initialize client with the retrieved key
+    // Initialize client
     const ai = new GoogleGenAI({ apiKey: apiKey });
 
     const image1Part = await fileToGenerativePart(file1);
     const image2Part = await fileToGenerativePart(file2);
 
     const prompt = `
-      أنت "RidgeAI"، نظام ذكاء اصطناعي شامل وشديد التطور للتحليل الجنائي (Forensic Fingerprint System).
+      أنت "RidgeAI"، نظام مختبر جنائي رقمي متكامل (Master Forensic Multi-Agent System).
+      لديك فريق من 16 وكيلاً متخصصاً. يجب عليك تنفيذ مهامهم بشكل تسلسلي وصارم لإنتاج تقرير جنائي معتمد للمحكمة.
+
+      **بروتوكول العمل التسلسلي:**
+
+      1. **Agent Delta (مراقب الجودة):** افحص وضوح الصورتين. هل هما صالحتان للفحص؟
       
-      **تعليمات صارمة جداً:**
-      1. جميع المخرجات نصياً يجب أن تكون باللغة العربية الفصحى حصراً (Forensic Arabic).
-      2. الأرقام دقيقة ومنطقية (0-100).
-
-      **المهام المطلوبة من فريق الوكلاء (Agents):**
-
-      1. **Agent Delta (الجودة):** قيم صلاحية الصور للفحص.
-      2. **Agent Epsilon (الأمان):** كشف التزييف.
-      3. **Agent Zeta (الإحصاء):** عد تفاصيل غالتون (نهايات، تفرعات).
+      2. **Agent Lambda (محرر الصور):** قم بمحاكاة خوارزميات التحسين (Gabor Filters, CLAHE, FFT). ما هي الفلاتر اللازمة لتوضيح البصمة الكامنة؟ كم نسبة تحسن الوضوح؟
       
-      4. **Agent Sigma (المحلل البيولوجي - Level 3 Details):**
-         - Poroscopy: هل مسام العرق مرئية؟ قدر عددها.
-         - Edgeoscopy: شكل حواف الخطوط.
-         - Biological Marks: ندوب وتجاعيد.
+      3. **Agent Rho (محلل السطح):** حلل الخلفية. هل البصمة على زجاج، ورق، جلد؟ هل هناك تداخل في الملمس (Texture Noise)؟
+      
+      4. **Agent Epsilon (الأمان):** كشف التزييف ومؤشرات الحياة.
+      
+      5. **Agent Alpha (المصدر):** تحليل بصمة الملف الأول (Pattern, Henry Class).
+      6. **Agent Beta (الهدف):** تحليل بصمة الملف الثاني.
+      
+      7. **Agent Zeta (الإحصاء):** عد تفاصيل غالتون (Minutiae) بدقة.
+      8. **Agent Sigma (المستوى 3):** فحص المسام (Pores) وحواف الخطوط (Ridge Edges).
+      
+      9. **Agent Theta (التشويه):** تحليل الضغط الميكانيكي والالتواء.
+      10. **Agent Nu (إعادة بناء الحركة):** بناءً على التشويه، كيف كانت حركة اليد؟ (دفع، إمساك، لمس خفيف)؟ تقدير اتجاه اليد.
+      
+      11. **Agent Kappa (القياس والاحتواء):** هل الصورة الثانية جزء (Subset) من الأولى؟ هل هي مكبرة (Zoomed)؟ قارن كثافة الخطوط.
+      
+      12. **Agent Gamma (المقارنة النصية):** اذكر نقاط التطابق والاختلاف.
+      13. **Agent Iota (المطابقة البصرية):** حدد 3-5 نقاط تشريحية ومناطقها للرسم.
+      
+      14. **Agent Psi (الربط المتعدد - NEW):** هل تؤكد البيانات أن هذين الأثرين يعودان لنفس الكائن البيولوجي (Identity Crosslinking) بغض النظر عن اختلاف السطح أو الوقت؟
+      15. **Agent Phi (الإحصاء البايزي):** احسب احتمالية التطابق العشوائي (PRC). قدم نسبة الاحتمالية (Likelihood Ratio).
+      
+      16. **Agent Omega (الخبير القانوني):** 
+          - اجمع كل ما سبق.
+          - صغ البيان الختامي بصيغة قانونية عربية رصينة.
+          - قيم قوة الدليل (Admissibility).
 
-      5. **Agent Theta (محلل التشويه والميكانيكا):**
-         - حدد مستوى الضغط (Pressure).
-         - الالتواء (Torsion).
-         - المرونة (Elasticity).
-
-      6. **Agent Iota (المحلل التشريحي البصري - Visual Mapper):**
-         - حدد 3 إلى 5 نقاط تشريحية متطابقة (مثل: Core, Delta, Specific Ridge Ending).
-         - لكل نقطة، حدد منطقتها التقريبية (Zone) في الصورة الأولى والصورة الثانية.
-         
-      7. **Agent Kappa (محلل القياس والاحتواء - Scale & Subset):** NEW!
-         - **مهم جداً:** قارن كثافة الخطوط (Ridge Density) وسمكها.
-         - إذا كانت الخطوط في الصورة الثانية "أعرض/أسمك" وتظهر تفاصيل أكبر من الصورة الأولى، فهذا يعني أنها **مكبرة (Zoomed In)**.
-         - تحقق بدقة: هل الصورة الثانية تمثل جزءاً فقط (Fragment/Subset) من الصورة الأولى الكاملة (Master)؟
-         - حدد نسبة التكبير (Scale Ratio):
-           - 1.0 = نفس الحجم.
-           - أكبر من 1.0 (مثلاً 2.5) = الصورة الثانية مكبرة جداً (Zoomed In).
-           - أصغر من 1.0 = الصورة الثانية مصغرة.
-         - حدد العلاقة: 'subset_master' (الثانية جزء من الأولى)، 'identical' (متطابق)، أو 'no_overlap'.
-
-      8. **Agent Alpha & Beta:** تصنيف هنري والأنماط.
-      9. **Agent Gamma:** المقارنة التفصيلية.
-
-      10. **Agent Omega (الخبير القانوني):**
-         - قيم مقبولية الدليل.
-         - بيان الخبير النهائي.
-         - ملاحظات الدفاع.
-
-      المخرج المطلوب: JSON فقط يلتزم بال Schema.
+      **قواعد المخرجات:**
+      - اللغة: العربية الفصحى (Forensic Arabic).
+      - الأرقام: دقيقة ومنطقية (0-100).
+      - JSON Output Only.
     `;
 
+    // --- SCHEMAS ---
+
     const qualitySchema: Schema = {
-      type: Type.OBJECT,
-      properties: {
-        isUsable: { type: Type.BOOLEAN },
-        qualityScore: { type: Type.INTEGER, description: "Score from 0 to 100" },
-        issues: { type: Type.ARRAY, items: { type: Type.STRING } },
-        recommendation: { type: Type.STRING, description: "Arabic text" }
-      },
-      required: ["isUsable", "qualityScore", "issues", "recommendation"]
+      type: Type.OBJECT, properties: { isUsable: { type: Type.BOOLEAN }, qualityScore: { type: Type.INTEGER }, issues: { type: Type.ARRAY, items: { type: Type.STRING } }, recommendation: { type: Type.STRING } }, required: ["isUsable", "qualityScore", "issues", "recommendation"]
+    };
+
+    const enhancementSchema: Schema = { // Lambda
+      type: Type.OBJECT, properties: { appliedFilters: { type: Type.ARRAY, items: { type: Type.STRING } }, clarityGain: { type: Type.INTEGER }, restoredRegions: { type: Type.ARRAY, items: { type: Type.STRING } }, originalNoiseLevel: { type: Type.STRING } }, required: ["appliedFilters", "clarityGain", "restoredRegions", "originalNoiseLevel"]
+    };
+
+    const surfaceSchema: Schema = { // Rho
+      type: Type.OBJECT, properties: { surfaceMaterial: { type: Type.STRING }, textureInterference: { type: Type.STRING }, backgroundNoiseType: { type: Type.STRING } }, required: ["surfaceMaterial", "textureInterference", "backgroundNoiseType"]
     };
 
     const forgerySchema: Schema = {
-      type: Type.OBJECT,
-      properties: {
-        isAuthentic: { type: Type.BOOLEAN },
-        authenticityScore: { type: Type.INTEGER, description: "Score from 0 to 100" },
-        riskFactors: { type: Type.ARRAY, items: { type: Type.STRING } },
-        livenessIndicators: { type: Type.ARRAY, items: { type: Type.STRING } }
-      },
-      required: ["isAuthentic", "authenticityScore", "riskFactors", "livenessIndicators"]
-    };
-
-    const minutiaeStatsSchema: Schema = {
-      type: Type.OBJECT,
-      properties: {
-        bifurcations: { type: Type.INTEGER },
-        ridgeEndings: { type: Type.INTEGER },
-        enclosures: { type: Type.INTEGER },
-        dots: { type: Type.INTEGER },
-        overallComplexity: { type: Type.STRING, enum: ["عالية", "متوسطة", "منخفضة"] }
-      },
-      required: ["bifurcations", "ridgeEndings", "enclosures", "dots", "overallComplexity"]
-    };
-
-    const biologicalSchema: Schema = {
-      type: Type.OBJECT,
-      properties: {
-        poresVisible: { type: Type.BOOLEAN },
-        poreCountEstimate: { type: Type.INTEGER },
-        edgeShape: { type: Type.STRING, enum: ['أملس', 'مسنن', 'غير واضح'] },
-        scars: { type: Type.ARRAY, items: { type: Type.STRING } },
-        creases: { type: Type.ARRAY, items: { type: Type.STRING } }
-      },
-      required: ["poresVisible", "poreCountEstimate", "edgeShape", "scars", "creases"]
-    };
-
-    const distortionSchema: Schema = {
-      type: Type.OBJECT,
-      properties: {
-        pressureLevel: { type: Type.STRING, enum: ['خفيف', 'متوسط', 'شديد'] },
-        torsionDetected: { type: Type.BOOLEAN },
-        elasticityIssues: { type: Type.BOOLEAN },
-        distortionScore: { type: Type.INTEGER, description: "0-100, high means distorted" },
-        affectedZones: { type: Type.ARRAY, items: { type: Type.STRING } }
-      },
-      required: ["pressureLevel", "torsionDetected", "elasticityIssues", "distortionScore", "affectedZones"]
-    };
-
-    const iotaSchema: Schema = {
-      type: Type.OBJECT,
-      properties: {
-        points: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              label: { type: Type.STRING, description: "Arabic label for the point" },
-              zone1: { type: Type.STRING, enum: ['top-left', 'top-center', 'top-right', 'middle-left', 'center', 'middle-right', 'bottom-left', 'bottom-center', 'bottom-right'] },
-              zone2: { type: Type.STRING, enum: ['top-left', 'top-center', 'top-right', 'middle-left', 'center', 'middle-right', 'bottom-left', 'bottom-center', 'bottom-right'] },
-              confidence: { type: Type.INTEGER }
-            },
-            required: ["label", "zone1", "zone2", "confidence"]
-          }
-        },
-        mappingScore: { type: Type.INTEGER },
-        visualConclusion: { type: Type.STRING }
-      },
-      required: ["points", "mappingScore", "visualConclusion"]
-    };
-
-    const kappaSchema: Schema = {
-      type: Type.OBJECT,
-      properties: {
-        isSubset: { type: Type.BOOLEAN },
-        scaleRatio: { type: Type.NUMBER, description: "e.g. 1.0, 2.5 (higher means zoomed in)" },
-        overlapPercentage: { type: Type.INTEGER, description: "0-100" },
-        relationship: { type: Type.STRING, enum: ['identical', 'subset_master', 'partial_overlap', 'no_overlap'] },
-        explanation: { type: Type.STRING, description: "Arabic explanation of size/scale/density relationship" }
-      },
-      required: ["isSubset", "scaleRatio", "overlapPercentage", "relationship", "explanation"]
+      type: Type.OBJECT, properties: { isAuthentic: { type: Type.BOOLEAN }, authenticityScore: { type: Type.INTEGER }, riskFactors: { type: Type.ARRAY, items: { type: Type.STRING } }, livenessIndicators: { type: Type.ARRAY, items: { type: Type.STRING } } }, required: ["isAuthentic", "authenticityScore", "riskFactors", "livenessIndicators"]
     };
 
     const analysisSchema: Schema = {
-      type: Type.OBJECT,
-      properties: {
-        patternType: { type: Type.STRING },
-        henryClassification: { type: Type.STRING },
-        ridgeQuality: { type: Type.STRING, enum: ["ممتازة", "جيدة", "ضعيفة", "غير واضحة"] },
-        estimatedMinutiaeCount: { type: Type.INTEGER },
-        distinctiveFeatures: { type: Type.ARRAY, items: { type: Type.STRING } },
-        imperfections: { type: Type.ARRAY, items: { type: Type.STRING } }
-      },
-      required: ["patternType", "henryClassification", "ridgeQuality", "estimatedMinutiaeCount", "distinctiveFeatures", "imperfections"]
+      type: Type.OBJECT, properties: { patternType: { type: Type.STRING }, henryClassification: { type: Type.STRING }, ridgeQuality: { type: Type.STRING }, estimatedMinutiaeCount: { type: Type.INTEGER }, distinctiveFeatures: { type: Type.ARRAY, items: { type: Type.STRING } }, imperfections: { type: Type.ARRAY, items: { type: Type.STRING } } }, required: ["patternType", "henryClassification", "ridgeQuality", "estimatedMinutiaeCount", "distinctiveFeatures", "imperfections"]
+    };
+
+    const minutiaeStatsSchema: Schema = {
+      type: Type.OBJECT, properties: { bifurcations: { type: Type.INTEGER }, ridgeEndings: { type: Type.INTEGER }, enclosures: { type: Type.INTEGER }, dots: { type: Type.INTEGER }, overallComplexity: { type: Type.STRING } }, required: ["bifurcations", "ridgeEndings", "enclosures", "dots", "overallComplexity"]
+    };
+
+    const biologicalSchema: Schema = {
+      type: Type.OBJECT, properties: { poresVisible: { type: Type.BOOLEAN }, poreCountEstimate: { type: Type.INTEGER }, edgeShape: { type: Type.STRING }, scars: { type: Type.ARRAY, items: { type: Type.STRING } }, creases: { type: Type.ARRAY, items: { type: Type.STRING } } }, required: ["poresVisible", "poreCountEstimate", "edgeShape", "scars", "creases"]
+    };
+
+    const distortionSchema: Schema = {
+      type: Type.OBJECT, properties: { pressureLevel: { type: Type.STRING }, torsionDetected: { type: Type.BOOLEAN }, elasticityIssues: { type: Type.BOOLEAN }, distortionScore: { type: Type.INTEGER }, affectedZones: { type: Type.ARRAY, items: { type: Type.STRING } } }, required: ["pressureLevel", "torsionDetected", "elasticityIssues", "distortionScore", "affectedZones"]
+    };
+
+    const actionSchema: Schema = { // Nu
+      type: Type.OBJECT, properties: { estimatedAction: { type: Type.STRING }, handOrientation: { type: Type.STRING }, timeDecayEstimate: { type: Type.STRING }, pressureDistribution: { type: Type.STRING } }, required: ["estimatedAction", "handOrientation", "timeDecayEstimate", "pressureDistribution"]
+    };
+
+    const kappaSchema: Schema = {
+      type: Type.OBJECT, properties: { isSubset: { type: Type.BOOLEAN }, scaleRatio: { type: Type.NUMBER }, overlapPercentage: { type: Type.INTEGER }, relationship: { type: Type.STRING }, explanation: { type: Type.STRING } }, required: ["isSubset", "scaleRatio", "overlapPercentage", "relationship", "explanation"]
+    };
+
+    const iotaSchema: Schema = {
+      type: Type.OBJECT, properties: { points: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { label: { type: Type.STRING }, zone1: { type: Type.STRING }, zone2: { type: Type.STRING }, confidence: { type: Type.INTEGER } }, required: ["label", "zone1", "zone2", "confidence"] } }, mappingScore: { type: Type.INTEGER }, visualConclusion: { type: Type.STRING } }, required: ["points", "mappingScore", "visualConclusion"]
+    };
+
+    const psiSchema: Schema = { // Psi
+      type: Type.OBJECT, properties: { isSameSource: { type: Type.BOOLEAN }, crossSurfaceMatch: { type: Type.BOOLEAN }, linkageConfidence: { type: Type.INTEGER }, consistencyCheck: { type: Type.STRING } }, required: ["isSameSource", "crossSurfaceMatch", "linkageConfidence", "consistencyCheck"]
+    };
+
+    const bayesianSchema: Schema = { // Phi
+      type: Type.OBJECT, properties: { randomCorrespondenceProbability: { type: Type.STRING }, likelihoodRatio: { type: Type.NUMBER }, statisticalStrength: { type: Type.STRING } }, required: ["randomCorrespondenceProbability", "likelihoodRatio", "statisticalStrength"]
     };
 
     const legalSchema: Schema = {
-      type: Type.OBJECT,
-      properties: {
-        admissibilityStatus: { type: Type.STRING, enum: ['مقبول بقوة', 'مقبول بحذر', 'غير صالح قانونياً'] },
-        legalConfidenceScore: { type: Type.INTEGER },
-        defenseNotes: { type: Type.STRING, description: "نقطة ضعف محتملة للدفاع" },
-        finalExpertStatement: { type: Type.STRING, description: "بيان قانوني رسمي" }
-      },
-      required: ["admissibilityStatus", "legalConfidenceScore", "defenseNotes", "finalExpertStatement"]
+      type: Type.OBJECT, properties: { admissibilityStatus: { type: Type.STRING }, legalConfidenceScore: { type: Type.INTEGER }, defenseNotes: { type: Type.STRING }, finalExpertStatement: { type: Type.STRING } }, required: ["admissibilityStatus", "legalConfidenceScore", "defenseNotes", "finalExpertStatement"]
     };
 
     const responseSchema: Schema = {
       type: Type.OBJECT,
       properties: {
-        qualityAgent: {
-          type: Type.OBJECT,
-          properties: { file1: qualitySchema, file2: qualitySchema },
-          required: ["file1", "file2"]
-        },
-        forgeryAgent: {
-          type: Type.OBJECT,
-          properties: { file1: forgerySchema, file2: forgerySchema },
-          required: ["file1", "file2"]
-        },
-        agentZeta: {
-          type: Type.OBJECT,
-          properties: { file1: minutiaeStatsSchema, file2: minutiaeStatsSchema },
-          required: ["file1", "file2"]
-        },
-        agentSigma: {
-          type: Type.OBJECT,
-          properties: { file1: biologicalSchema, file2: biologicalSchema },
-          required: ["file1", "file2"]
-        },
-        agentTheta: {
-          type: Type.OBJECT,
-          properties: { file1: distortionSchema, file2: distortionSchema },
-          required: ["file1", "file2"]
-        },
-        agentIota: iotaSchema,
+        agentDelta: { type: Type.OBJECT, properties: { file1: qualitySchema, file2: qualitySchema }, required: ["file1", "file2"] },
+        agentLambda: { type: Type.OBJECT, properties: { file1: enhancementSchema, file2: enhancementSchema }, required: ["file1", "file2"] },
+        agentRho: { type: Type.OBJECT, properties: { file1: surfaceSchema, file2: surfaceSchema }, required: ["file1", "file2"] },
+        agentEpsilon: { type: Type.OBJECT, properties: { file1: forgerySchema, file2: forgerySchema }, required: ["file1", "file2"] },
+        
+        agentAlpha: analysisSchema,
+        agentBeta: analysisSchema,
+        agentZeta: { type: Type.OBJECT, properties: { file1: minutiaeStatsSchema, file2: minutiaeStatsSchema }, required: ["file1", "file2"] },
+        agentSigma: { type: Type.OBJECT, properties: { file1: biologicalSchema, file2: biologicalSchema }, required: ["file1", "file2"] },
+        
+        agentTheta: { type: Type.OBJECT, properties: { file1: distortionSchema, file2: distortionSchema }, required: ["file1", "file2"] },
+        agentNu: { type: Type.OBJECT, properties: { file1: actionSchema, file2: actionSchema }, required: ["file1", "file2"] },
         agentKappa: kappaSchema,
-        agent1Analysis: analysisSchema,
-        agent2Analysis: analysisSchema,
-        comparisonAgent: {
-          type: Type.OBJECT,
-          properties: {
-            patternMatch: {
-              type: Type.OBJECT,
-              properties: { score: { type: Type.NUMBER }, explanation: { type: Type.STRING } },
-              required: ["score", "explanation"]
-            },
-            minutiaeMatch: {
-              type: Type.OBJECT,
-              properties: { score: { type: Type.NUMBER }, commonPointsFound: { type: Type.ARRAY, items: { type: Type.STRING } }, differencesFound: { type: Type.ARRAY, items: { type: Type.STRING } } },
-              required: ["score", "commonPointsFound", "differencesFound"]
-            }
-          },
-          required: ["patternMatch", "minutiaeMatch"]
-        },
+        
+        agentGamma: { type: Type.OBJECT, properties: { patternMatch: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, explanation: { type: Type.STRING } } }, minutiaeMatch: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, commonPointsFound: { type: Type.ARRAY, items: { type: Type.STRING } }, differencesFound: { type: Type.ARRAY, items: { type: Type.STRING } } } } }, required: ["patternMatch", "minutiaeMatch"] },
+        agentIota: iotaSchema,
+        
+        agentPsi: psiSchema, // Agent 16
+        agentPhi: bayesianSchema,
+        
         agentOmega: legalSchema,
-        finalResult: {
-          type: Type.OBJECT,
-          properties: {
-            matchScore: { type: Type.NUMBER },
-            isMatch: { type: Type.BOOLEAN },
-            confidenceLevel: { type: Type.STRING, enum: ["عالية", "متوسطة", "منخفضة"] },
-            forensicConclusion: { type: Type.STRING }
-          },
-          required: ["matchScore", "isMatch", "confidenceLevel", "forensicConclusion"]
-        }
+        finalResult: { type: Type.OBJECT, properties: { matchScore: { type: Type.NUMBER }, isMatch: { type: Type.BOOLEAN }, confidenceLevel: { type: Type.STRING }, forensicConclusion: { type: Type.STRING } }, required: ["matchScore", "isMatch", "confidenceLevel", "forensicConclusion"] }
       },
-      required: ["qualityAgent", "forgeryAgent", "agentZeta", "agentSigma", "agentTheta", "agentIota", "agentKappa", "agent1Analysis", "agent2Analysis", "comparisonAgent", "agentOmega", "finalResult"]
+      required: ["agentDelta", "agentLambda", "agentRho", "agentEpsilon", "agentAlpha", "agentBeta", "agentZeta", "agentSigma", "agentTheta", "agentNu", "agentKappa", "agentGamma", "agentIota", "agentPsi", "agentPhi", "agentOmega", "finalResult"]
     };
 
     const response = await ai.models.generateContent({
@@ -294,13 +196,12 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
       config: {
         responseMimeType: "application/json",
         responseSchema: responseSchema,
-        thinkingConfig: { thinkingBudget: 10240 }
+        thinkingConfig: { thinkingBudget: 16384 } 
       },
     });
 
     if (response.text) {
       const aiData = JSON.parse(response.text);
-      
       const finalResult: ComparisonResult = {
         ...aiData,
         chainOfCustody: {
@@ -310,7 +211,6 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
           integrityVerified: true
         }
       };
-      
       return finalResult;
     } else {
       throw new Error("لم يتم استلام رد صالح من النموذج.");
