@@ -103,5 +103,7 @@ export interface HistoryRecord {
   timestamp: number;
   file1Name: string;
   file2Name: string;
+  file1Data?: Blob; // Store the actual image blob
+  file2Data?: Blob; // Store the actual image blob
   result: ComparisonResult;
 }

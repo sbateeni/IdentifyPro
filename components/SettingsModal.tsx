@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Server, Key, Save, Trash2, CheckCircle, ShieldAlert, ExternalLink } from 'lucide-react';
-import { saveApiKey, getApiKey, removeApiKey } from '../services/db';
+import { X, Server, Key, Save, Trash2, CheckCircle, ShieldAlert, ExternalLink, Zap, Cpu, Gauge } from 'lucide-react';
+import { saveApiKey, getApiKey, removeApiKey, savePaidMode, getPaidMode } from '../services/db';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -13,10 +13,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const [isSaved, setIsSaved] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
   const [hasKey, setHasKey] = useState(false);
+  const [usePaidApi, setUsePaidApi] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       checkExistingKey();
+      checkPaidMode();
     }
   }, [isOpen]);
 
@@ -31,13 +33,19 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const checkPaidMode = async () => {
+    const isPaid = await getPaidMode();
+    setUsePaidApi(isPaid);
+  };
+
   const handleSave = async () => {
     if (!apiKey.trim()) return;
     try {
       await saveApiKey(apiKey.trim());
+      await savePaidMode(usePaidApi);
       setIsSaved(true);
       setHasKey(true);
-      setStatusMsg('تم حفظ المفتاح بنجاح في المتصفح');
+      setStatusMsg('تم حفظ الإعدادات بنجاح');
       setTimeout(() => {
         setIsSaved(false);
         setStatusMsg('');
@@ -83,10 +91,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
               <p className="text-slate-600 text-xs leading-relaxed mb-4">
-                لكي يعمل التطبيق، يجب توفير مفتاح Gemini API. سيتم تخزين المفتاح محلياً في متصفحك (IndexedDB) ولن يتم مشاركته مع أي خادم خارجي بخلاف Google.
+                لكي يعمل التطبيق، يجب توفير مفتاح Gemini API. سيتم تخزين المفتاح محلياً في متصفحك (IndexedDB).
               </p>
               
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
                   <div className="flex justify-between items-center mb-1">
                     <label className="block text-xs font-bold text-slate-700">مفتاح Gemini API</label>
@@ -116,13 +124,43 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                {/* Performance Mode Toggle */}
+                <div 
+                  className={`bg-white p-3 rounded-lg border flex items-center justify-between transition-all ${usePaidApi ? 'border-indigo-300 ring-1 ring-indigo-100' : 'border-slate-200'}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-full transition-colors ${usePaidApi ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
+                      {usePaidApi ? <Cpu className="w-4 h-4" /> : <Gauge className="w-4 h-4" />}
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                         {usePaidApi ? "الوضع الخارق (Gemini 3 Pro)" : "الوضع القياسي (Gemini 2.5 Flash)"}
+                      </div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">
+                        {usePaidApi 
+                          ? "أقصى ذكاء وتحليل عميق (32k Thinking Tokens)." 
+                          : "سرعة عالية وتوفير في الاستهلاك."}
+                      </div>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={usePaidApi}
+                      onChange={(e) => setUsePaidApi(e.target.checked)}
+                      className="sr-only peer" 
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                  </label>
+                </div>
+
+                <div className="flex gap-2 pt-2">
                   <button 
                     onClick={handleSave}
                     className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors"
                   >
                     <Save className="w-4 h-4" />
-                    حفظ المفتاح
+                    حفظ الإعدادات
                   </button>
                   {hasKey && (
                     <button 
@@ -146,7 +184,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             <div className="mt-4 flex items-start gap-2 text-[11px] text-slate-500 bg-blue-50 p-2 rounded border border-blue-100">
               <ShieldAlert className="w-4 h-4 flex-shrink-0 text-blue-500" />
               <span>
-                تنبيه: إذا ظهر خطأ "Permission Denied" (403)، فهذا يعني أن المفتاح غير مصرح له أو أن مشروعك على Google Cloud لم يفعل خدمة Generative Language API. تأكد من تفعيلها للمشروع المرتبط بالمفتاح.
+                ملاحظة: "الوضع الخارق" يعمل مع الحسابات المجانية ولكنه يستهلك حصة (RPM) أعلى. إذا واجهت أخطاء 429، عد إلى الوضع القياسي.
               </span>
             </div>
           </div>

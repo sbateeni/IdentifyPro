@@ -1,11 +1,12 @@
 
 import { HistoryRecord } from "../types";
 
-const DB_NAME = 'RidgeAiDB'; // Changed DB name for rebranding
+const DB_NAME = 'RidgeAiDB';
 const DB_VERSION = 2;
 const STORE_SETTINGS = 'settings';
 const STORE_HISTORY = 'history';
 const KEY_ID = 'gemini_api_key';
+const KEY_PAID_MODE = 'use_paid_api';
 
 const openDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
@@ -88,6 +89,40 @@ export const removeApiKey = async (): Promise<void> => {
   }
 };
 
+// --- PAID MODE OPERATIONS ---
+
+export const savePaidMode = async (isPaid: boolean): Promise<void> => {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_SETTINGS, 'readwrite');
+      const store = transaction.objectStore(STORE_SETTINGS);
+      const request = store.put(isPaid, KEY_PAID_MODE);
+      
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.error("Error saving paid mode:", error);
+  }
+};
+
+export const getPaidMode = async (): Promise<boolean> => {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_SETTINGS, 'readonly');
+      const store = transaction.objectStore(STORE_SETTINGS);
+      const request = store.get(KEY_PAID_MODE);
+      
+      request.onsuccess = () => resolve(!!request.result); // Default to false if undefined
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    return false;
+  }
+};
+
 // --- HISTORY OPERATIONS ---
 
 export const saveHistory = async (record: Omit<HistoryRecord, 'id'>): Promise<number> => {
@@ -108,7 +143,6 @@ export const getHistory = async (): Promise<HistoryRecord[]> => {
     const transaction = db.transaction(STORE_HISTORY, 'readonly');
     const store = transaction.objectStore(STORE_HISTORY);
     const index = store.index('timestamp');
-    // Get all records, sorted by timestamp (oldest to newest by default, we'll reverse in UI)
     const request = index.getAll();
     
     request.onsuccess = () => resolve(request.result);

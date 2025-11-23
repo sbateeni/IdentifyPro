@@ -32,12 +32,14 @@ const App: React.FC = () => {
       const analysis = await compareFingerprints(file1, file2);
       setResult(analysis);
       
-      // Save to History automatically
+      // Save to History automatically INCLUDING file data (Blobs)
       try {
         await saveHistory({
           timestamp: Date.now(),
           file1Name: file1.name,
           file2Name: file2.name,
+          file1Data: file1, // Store the blob/file
+          file2Data: file2, // Store the blob/file
           result: analysis
         });
       } catch (saveErr) {
@@ -81,11 +83,24 @@ const App: React.FC = () => {
 
   const handleHistorySelect = (record: HistoryRecord) => {
     setResult(record.result);
-    // Note: We can't easily restore the actual File objects from DB without storing blobs, 
-    // so we just show the result and maybe clear the file inputs or show placeholders.
-    // For UX clarity, let's clear current files to indicate we are viewing a record.
-    setFile1(null);
-    setFile2(null);
+    
+    // Restore the files from the saved Blob data
+    // IndexedDB stores them as Blobs, we can cast them to File or just use them as Blobs 
+    // since ImageUpload/VisualMatcher uses URL.createObjectURL which accepts Blob.
+    if (record.file1Data) {
+      // Recreating a File object just to be safe with name property, though Blob works for display
+      const restoredFile1 = new File([record.file1Data], record.file1Name, { type: record.file1Data.type });
+      setFile1(restoredFile1);
+    } else {
+      setFile1(null);
+    }
+
+    if (record.file2Data) {
+      const restoredFile2 = new File([record.file2Data], record.file2Name, { type: record.file2Data.type });
+      setFile2(restoredFile2);
+    } else {
+      setFile2(null);
+    }
     
     // Scroll to results
     setTimeout(() => {

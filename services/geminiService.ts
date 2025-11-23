@@ -1,7 +1,7 @@
 
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { ComparisonResult } from "../types";
-import { getApiKey } from "./db";
+import { getApiKey, getPaidMode } from "./db";
 
 // Helper to calculate SHA-256 Hash for Chain of Custody
 const calculateSHA256 = async (file: File): Promise<string> => {
@@ -44,6 +44,15 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
     if (!apiKey) {
       throw new Error("مفتاح API غير موجود. يرجى إضافته من قائمة الإعدادات.");
     }
+
+    // Check if Paid Mode is enabled
+    const usePaidMode = await getPaidMode();
+
+    // Determine Model and Thinking Budget based on mode
+    // Paid Mode: Uses 'gemini-3-pro-preview' (as requested) with high thinking budget.
+    // Free Mode: Uses 'gemini-2.5-flash' with no or low thinking budget to avoid limits.
+    const modelName = usePaidMode ? "gemini-3-pro-preview" : "gemini-2.5-flash";
+    const thinkingBudget = usePaidMode ? 32768 : 0; 
 
     const ai = new GoogleGenAI({ apiKey: apiKey });
     const image1Part = await fileToGenerativePart(file1);
@@ -210,8 +219,18 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
       required: ["phase1", "phase2", "phase3", "phase4", "phase5", "visualMapping", "finalResult"]
     };
 
+    // Define config based on mode
+    const generationConfig: any = {
+      responseMimeType: "application/json",
+      responseSchema: responseSchema,
+    };
+
+    if (thinkingBudget > 0) {
+      generationConfig.thinkingConfig = { thinkingBudget: thinkingBudget };
+    }
+
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: modelName,
       contents: {
         parts: [
           image1Part,
@@ -219,16 +238,11 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
           { text: prompt }
         ]
       },
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: responseSchema,
-        thinkingConfig: { thinkingBudget: 16384 } 
-      },
+      config: generationConfig,
     });
 
     if (response.text) {
       const aiData = JSON.parse(response.text);
-      // Map legacy visual mapping to new structure if needed or ensure prompt respects structure
       const finalResult: ComparisonResult = {
         chainOfCustody: {
           file1Hash: hash1,
