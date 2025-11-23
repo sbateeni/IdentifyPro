@@ -113,8 +113,8 @@ const AgentsGuideModal: React.FC<AgentsGuideModalProps> = ({ isOpen, onClose }) 
         },
         { 
           name: "Psi", 
-          role: "Cross-Modality Linker", 
-          desc: "يربط بين أنواع مختلفة من الآثار (مثلاً: بصمة حبرية مقابل بصمة كامنة). يتأكد من أن الخصائص البيومترية متسقة عبر وسائط مختلفة." 
+          role: "Identity & Cross-Linker", 
+          desc: "الرابط الجنائي الأهم. يجيب على السؤال: 'هل هذه البصمات المتعددة والمختلفة في المصدر (حبر، دم، سطح خشن) تعود لنفس الفرد؟' يربط الهوية عبر وسائط مختلفة." 
         },
         { 
           name: "Atlas", 

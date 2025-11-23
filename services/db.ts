@@ -2,11 +2,15 @@
 import { HistoryRecord } from "../types";
 
 const DB_NAME = 'RidgeAiDB';
-const DB_VERSION = 2;
+const DB_VERSION = 3; // Incremented version
 const STORE_SETTINGS = 'settings';
 const STORE_HISTORY = 'history';
 const KEY_ID = 'gemini_api_key';
 const KEY_PAID_MODE = 'use_paid_api';
+
+// New Keys for OpenRouter
+const KEY_PROVIDER = 'ai_provider'; // 'gemini' | 'openrouter'
+const KEY_OPENROUTER_API_KEY = 'openrouter_api_key';
 
 const openDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
@@ -36,7 +40,7 @@ const openDB = (): Promise<IDBDatabase> => {
   });
 };
 
-// --- API KEY OPERATIONS ---
+// --- GEMINI API KEY OPERATIONS ---
 
 export const saveApiKey = async (key: string): Promise<void> => {
   try {
@@ -89,7 +93,73 @@ export const removeApiKey = async (): Promise<void> => {
   }
 };
 
-// --- PAID MODE OPERATIONS ---
+// --- OPENROUTER OPERATIONS ---
+
+export const saveOpenRouterKey = async (key: string): Promise<void> => {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_SETTINGS, 'readwrite');
+      const store = transaction.objectStore(STORE_SETTINGS);
+      const request = store.put(key, KEY_OPENROUTER_API_KEY);
+      
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.error("Error saving OpenRouter key:", error);
+    throw error;
+  }
+};
+
+export const getOpenRouterKey = async (): Promise<string | null> => {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_SETTINGS, 'readonly');
+      const store = transaction.objectStore(STORE_SETTINGS);
+      const request = store.get(KEY_OPENROUTER_API_KEY);
+      
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    return null;
+  }
+};
+
+export const saveProvider = async (provider: 'gemini' | 'openrouter'): Promise<void> => {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_SETTINGS, 'readwrite');
+      const store = transaction.objectStore(STORE_SETTINGS);
+      const request = store.put(provider, KEY_PROVIDER);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.error("Error saving provider:", error);
+  }
+};
+
+export const getProvider = async (): Promise<'gemini' | 'openrouter'> => {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_SETTINGS, 'readonly');
+      const store = transaction.objectStore(STORE_SETTINGS);
+      const request = store.get(KEY_PROVIDER);
+      
+      request.onsuccess = () => resolve(request.result || 'gemini');
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    return 'gemini';
+  }
+};
+
+// --- PAID MODE OPERATIONS (GEMINI) ---
 
 export const savePaidMode = async (isPaid: boolean): Promise<void> => {
   try {

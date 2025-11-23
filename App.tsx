@@ -6,9 +6,10 @@ import SettingsModal from './components/SettingsModal';
 import HistorySidebar from './components/HistorySidebar';
 import AgentsGuideModal from './components/AgentsGuideModal';
 import { compareFingerprints } from './services/geminiService';
-import { saveHistory } from './services/db';
+import { compareFingerprintsOpenRouter } from './services/openRouterService';
+import { saveHistory, getProvider } from './services/db';
 import { ComparisonResult, HistoryRecord } from './types';
-import { ScanLine, Loader2, ShieldCheck, Users, Key, History, BookOpen } from 'lucide-react';
+import { ScanLine, Loader2, ShieldCheck, Users, Key, History, BookOpen, Settings, ShieldAlert } from 'lucide-react';
 
 const App: React.FC = () => {
   const [file1, setFile1] = useState<File | null>(null);
@@ -29,7 +30,18 @@ const App: React.FC = () => {
     setResult(null);
 
     try {
-      const analysis = await compareFingerprints(file1, file2);
+      const provider = await getProvider();
+      let analysis: ComparisonResult;
+
+      console.log(`Starting analysis using provider: ${provider}`);
+
+      if (provider === 'openrouter') {
+        analysis = await compareFingerprintsOpenRouter(file1, file2);
+      } else {
+        // Default to Gemini
+        analysis = await compareFingerprints(file1, file2);
+      }
+
       setResult(analysis);
       
       // Save to History automatically INCLUDING file data (Blobs)
@@ -63,15 +75,17 @@ const App: React.FC = () => {
          }
       }
 
-      // Check for API Key specific errors (403, 400, etc)
+      // Check for API Key specific errors
       const isAuthError = 
         errorMessage.includes("API key") || 
         errorMessage.includes("PERMISSION_DENIED") || 
         errorMessage.includes("403") ||
-        errorMessage.toLowerCase().includes("permission");
+        errorMessage.includes("401") ||
+        errorMessage.toLowerCase().includes("permission") ||
+        errorMessage.includes("مفتاح");
 
       if (isAuthError) {
-        setError("خطأ في الصلاحيات (403): مفتاح API غير صالح أو لا يملك إذن الوصول. يرجى التحقق من تفعيل Google Generative AI API في حسابك.");
+        setError(`خطأ في المصادقة: ${errorMessage}`);
         setIsSettingsOpen(true);
       } else {
         setError(`حدث خطأ أثناء التحليل: ${errorMessage}`);
@@ -85,19 +99,28 @@ const App: React.FC = () => {
     setResult(record.result);
     
     // Restore the files from the saved Blob data
-    // IndexedDB stores them as Blobs, we can cast them to File or just use them as Blobs 
-    // since ImageUpload/VisualMatcher uses URL.createObjectURL which accepts Blob.
+    // Added safety check: ensure file1Data exists before creating File object
     if (record.file1Data) {
-      // Recreating a File object just to be safe with name property, though Blob works for display
-      const restoredFile1 = new File([record.file1Data], record.file1Name, { type: record.file1Data.type });
-      setFile1(restoredFile1);
+      try {
+        const restoredFile1 = new File([record.file1Data], record.file1Name, { type: record.file1Data.type });
+        setFile1(restoredFile1);
+      } catch (e) {
+        console.error("Error restoring file 1", e);
+        setFile1(null);
+      }
     } else {
       setFile1(null);
     }
 
+    // Added safety check: ensure file2Data exists before creating File object
     if (record.file2Data) {
-      const restoredFile2 = new File([record.file2Data], record.file2Name, { type: record.file2Data.type });
-      setFile2(restoredFile2);
+      try {
+        const restoredFile2 = new File([record.file2Data], record.file2Name, { type: record.file2Data.type });
+        setFile2(restoredFile2);
+      } catch (e) {
+        console.error("Error restoring file 2", e);
+        setFile2(null);
+      }
     } else {
       setFile2(null);
     }
@@ -152,8 +175,8 @@ const App: React.FC = () => {
               onClick={() => setIsSettingsOpen(true)}
               className="flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors shadow-sm"
             >
-              <Key className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">API Key</span>
+              <Settings className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">الإعدادات / API</span>
             </button>
           </div>
         </div>
@@ -234,52 +257,43 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Error Message */}
+        {/* Results Section */}
         {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 mb-8 text-center animate-fade-up flex flex-col items-center justify-center gap-2">
-             <div className="flex items-center gap-2 font-bold">
-                <ShieldCheck className="w-5 h-5" />
-                <span>{error}</span>
-             </div>
-             {error.includes("403") && (
-                <button onClick={() => setIsSettingsOpen(true)} className="text-xs bg-red-100 px-3 py-1 rounded-full mt-2 hover:bg-red-200 transition-colors font-bold">
-                  تحديث مفتاح API
-                </button>
-             )}
+          <div className="p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 flex items-center gap-3 animate-fade-up">
+             <ShieldAlert className="w-5 h-5 flex-shrink-0" />
+             <span className="font-bold text-sm">{error}</span>
           </div>
         )}
 
-        {/* Results Section */}
         {result && (
-          <div id="results" className="animate-fade-up">
-            
-            {/* Toolbar when showing results */}
-            <div className="flex items-center justify-between mb-6 no-print">
+          <div id="results">
+             {/* Pass actual file objects to Results for Visual Mapping */}
+             <Results result={result} file1={file1} file2={file2} />
+             
+             <div className="mt-10 text-center no-print">
                <button 
-                onClick={reset}
-                className="text-slate-500 hover:text-slate-800 flex items-center gap-2 text-sm font-medium transition-colors"
-              >
-                ← عودة للفحص الجديد
-              </button>
-              <div className="text-sm text-slate-400">
-                ID: {Date.now().toString().slice(-6)}
-              </div>
-            </div>
-
-            <Results result={result} file1={file1} file2={file2} />
-            
-            <div className="mt-12 text-center pb-8 no-print">
-              <button 
-                onClick={reset}
-                className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 px-8 py-3 rounded-xl text-sm font-bold transition-all shadow-sm hover:shadow-md"
-              >
-                إجراء فحص جديد
-              </button>
-            </div>
+                 onClick={reset}
+                 className="text-slate-500 hover:text-indigo-600 font-bold flex items-center justify-center gap-2 mx-auto transition-colors"
+               >
+                 ← عودة للفحص الجديد
+               </button>
+             </div>
           </div>
         )}
 
       </main>
+      
+      {/* Footer */}
+      <footer className="border-t border-slate-200 bg-white py-8 mt-auto no-print">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <p className="text-slate-400 text-xs font-mono mb-2">
+            RidgeAI Forensic System v3.0 • Quantum Orchestrator Engine
+          </p>
+          <div className="flex justify-center gap-4 text-[10px] text-slate-300 uppercase tracking-widest">
+            <span>Secure</span> • <span>Encrypted</span> • <span>Client-Side Processing</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

@@ -92,7 +92,7 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
 
       المرحلة 3: الإحصاء والربط (Statistical)
       - Phi: بايزي (Likelihood Ratio).
-      - Psi: ربط الهوية (Cross-Linking).
+      - Psi: ربط الهوية الموحد (Identity Cross-Linker). هل تعود البصمتان لنفس الفرد بغض النظر عن اختلاف السطح أو طريقة الطبع؟
       - Atlas: ندرة التردد العالمي.
       - Chronos: تقدير تقادم الأثر.
       - Tactus: محاكاة الضغط.
