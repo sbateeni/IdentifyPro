@@ -1,12 +1,14 @@
+
 import React, { useState } from 'react';
 import ImageUpload from './components/ImageUpload';
 import Results from './components/Results';
 import SettingsModal from './components/SettingsModal';
 import HistorySidebar from './components/HistorySidebar';
+import AgentsGuideModal from './components/AgentsGuideModal';
 import { compareFingerprints } from './services/geminiService';
 import { saveHistory } from './services/db';
 import { ComparisonResult, HistoryRecord } from './types';
-import { ScanLine, Loader2, ShieldCheck, Users, Settings, Key, History } from 'lucide-react';
+import { ScanLine, Loader2, ShieldCheck, Users, Key, History, BookOpen } from 'lucide-react';
 
 const App: React.FC = () => {
   const [file1, setFile1] = useState<File | null>(null);
@@ -17,6 +19,7 @@ const App: React.FC = () => {
   
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
 
   const handleCompare = async () => {
     if (!file1 || !file2) return;
@@ -112,10 +115,14 @@ const App: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-2 md:gap-3">
-            <div className="hidden md:flex items-center gap-1 text-xs font-bold bg-indigo-50 px-3 py-1.5 rounded-full text-indigo-700 border border-indigo-100">
-              <Users className="w-3 h-3" />
-              <span>Multi-Agent System</span>
-            </div>
+            
+            <button
+              onClick={() => setIsGuideOpen(true)}
+              className="hidden md:flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-bold border border-indigo-100 hover:bg-indigo-100 transition-colors"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>دليل الوكلاء</span>
+            </button>
             
             <button
               onClick={() => setIsHistoryOpen(true)}
@@ -143,11 +150,16 @@ const App: React.FC = () => {
         onClose={() => setIsHistoryOpen(false)} 
         onSelectRecord={handleHistorySelect}
       />
+      <AgentsGuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
 
       <main className="max-w-5xl mx-auto px-4 py-8 md:py-12">
         
         {!result && (
           <div className="text-center mb-12 animate-fade-up">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-bold mb-4 md:hidden" onClick={() => setIsGuideOpen(true)}>
+               <Users className="w-3 h-3" />
+               نظام يعمل بـ 30 وكيلاً ذكياً
+            </div>
             <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">
               نظام التحليل الجنائي <span className="text-indigo-600">الذكي</span>
             </h2>

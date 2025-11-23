@@ -226,8 +226,8 @@ const VisualMatcher: React.FC<VisualMatcherProps> = ({ data, file1, file2 }) => 
 
       <div className="px-6 py-3 bg-slate-900 print:bg-white print:border-t print:border-slate-300">
         <div className="text-xs text-slate-400 font-mono flex justify-between items-center print:text-black">
-          <span>Mapping Score: <span className="text-cyan-400 font-bold text-sm print:text-black">{data.mappingScore}/100</span></span>
-          <span className="italic opacity-70">{data.visualConclusion}</span>
+          <span>Mapping Score: <span className="text-cyan-400 font-bold text-sm print:text-black">{data.score}/100</span></span>
+          <span className="italic opacity-70">{data.conclusion}</span>
         </div>
       </div>
     </div>

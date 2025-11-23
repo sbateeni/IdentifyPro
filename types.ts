@@ -1,133 +1,67 @@
 
-export interface FingerprintAnalysis {
-  patternType: string;
-  henryClassification: string; // Added Henry System
-  ridgeQuality: 'ممتازة' | 'جيدة' | 'ضعيفة' | 'غير واضحة';
-  estimatedMinutiaeCount: number;
-  distinctiveFeatures: string[];
-  imperfections: string[];
+// --- Common Sub-Types ---
+
+export interface AgentResult {
+  agentName: string;
+  status: 'Active' | 'Idle';
+  outputSummary: string;
+  score?: number; // 0-100
+  details?: Record<string, string | number | boolean>;
 }
 
-export interface DetailedComparison {
-  patternMatch: {
-    score: number;
-    explanation: string;
+// --- PHASE 1: Structural Analysis (Alpha - Helios) ---
+export interface Phase1Structural {
+  agentAlpha: { patternType: string; confidence: number; };
+  agentBeta: { qualityMetric: string; noiseLevel: string; };
+  agentGamma: { ridgeFlow: string; bifurcationCount: number; };
+  agentDelta: { featureVectorSize: number; mathematicalComplexity: string; };
+  agentEpsilon: { reconstructionNeeded: boolean; partialArea: string; };
+  agentRho: { substrateAnalysis: string; indirectReflection: boolean; }; // Moved Rho here as per prompt pipeline
+  agentLyra: { geometry: string; symmetry: string; }; // Hypothetical agent from "Helios" group in prompt
+  agentHelios: { lightingCorrection: string; shadowRemoved: boolean; };
+}
+
+// --- PHASE 2: Minutiae & Micro Analysis (Zeta - Quanta) ---
+export interface Phase2Micro {
+  agentZeta: { matchPrecision: string; minutiaePairs: number; };
+  agentSigma: { poreCount: number; edgeShape: string; };
+  agentTheta: { distortionDetected: boolean; torsionAngle: number; };
+  agentKappa: { scaleRatio: number; subsetMatch: boolean; };
+  agentIota: { anatomicalLandmarks: number; visualPath: string; };
+  agentQuanta: { nanoDetails: string; subPixelAccuracy: number; };
+}
+
+// --- PHASE 3: Statistical & Linking (Phi - Spectra) ---
+export interface Phase3Statistical {
+  agentPhi: { likelihoodRatio: number; prc: string; }; // Bayesian
+  agentPsi: { crossLinkConfirmed: boolean; sourceIdentityConfidence: number; };
+  agentAtlas: { globalDbSearch: string; frequencyRarity: string; };
+  agentChronos: { timeDecay: string; ageEstimation: string; };
+  agentTactus: { pressureMap: string; touchForce: number; };
+  agentSpectra: { spectralAnalysis: string; chemicalResidueSimulation: string; };
+}
+
+// --- PHASE 4: Reconstruction & Simulation (Morphix - Fornax) ---
+export interface Phase4Reconstruction {
+  agentMorphix: { missingRidgeReconstruction: string; percentRestored: number; };
+  agentOrion: { patternExtrapolation: string; };
+  agentVulcan: { heatDistortionSim: string; plasticDeformation: boolean; };
+  agentHermes: { transferMethod: string; motionBlurCorrection: string; };
+  agentNemesis: { antiSpoofingAdvanced: string; livenessScore: number; };
+  agentFornax: { digitalNoiseFilter: string; artifactRemoval: number; };
+}
+
+// --- PHASE 5: Consolidation (Psi - Aegis) ---
+export interface Phase5Consolidation {
+  agentAegis: { defenseRebuttal: string; loopholeCheck: string; };
+  agentOmega: { 
+    finalExpertStatement: string; 
+    admissibility: 'High' | 'Medium' | 'Low'; 
+    legalConfidence: number; 
   };
-  minutiaeMatch: {
-    score: number;
-    commonPointsFound: string[];
-    differencesFound: string[];
-  };
 }
 
-export interface MinutiaeStats {
-  bifurcations: number; // تفرعات
-  ridgeEndings: number; // نهايات
-  enclosures: number; // بحيرات/جزر
-  dots: number; // نقاط
-  overallComplexity: 'عالية' | 'متوسطة' | 'منخفضة';
-}
-
-// Agent Sigma (Biological/Level 3 Details)
-export interface BiologicalAnalysis {
-  poresVisible: boolean;
-  poreCountEstimate: number; // Poroscopy
-  edgeShape: 'أملس' | 'مسنن' | 'غير واضح'; // Edgeoscopy
-  scars: string[]; // Permanent
-  creases: string[]; // Temporary
-}
-
-// Agent Theta (Distortion & Mechanical)
-export interface DistortionAnalysis {
-  pressureLevel: 'خفيف' | 'متوسط' | 'شديد';
-  torsionDetected: boolean; // Is there twisting?
-  elasticityIssues: boolean; // Skin stretching?
-  distortionScore: number; // 0-100 (Higher means more distorted)
-  affectedZones: string[]; // Zones like "Central Core", "Upper Delta"
-}
-
-// Agent Iota (Visual Anatomical Mapping)
-export interface AnatomicalPoint {
-  label: string; // e.g., "Core Bifurcation"
-  zone1: 'top-left' | 'top-center' | 'top-right' | 'middle-left' | 'center' | 'middle-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
-  zone2: 'top-left' | 'top-center' | 'top-right' | 'middle-left' | 'center' | 'middle-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
-  confidence: number;
-}
-
-export interface AnatomicalMapping {
-  points: AnatomicalPoint[];
-  mappingScore: number;
-  visualConclusion: string;
-}
-
-// Agent Kappa (Scale & Subset Analyzer)
-export interface ScaleAnalysis {
-  isSubset: boolean; // Is file2 a part of file1?
-  scaleRatio: number; // e.g., 1.0 = same, 2.0 = 2x zoom, 0.5 = zoomed out
-  overlapPercentage: number; // 0-100
-  relationship: 'identical' | 'subset_master' | 'partial_overlap' | 'no_overlap';
-  explanation: string;
-}
-
-// Agent Lambda (Forensic Enhancer)
-export interface ForensicEnhancement {
-  appliedFilters: string[]; // e.g., "CLAHE", "Gabor Filter", "FFT"
-  clarityGain: number; // Estimated percentage of improvement
-  restoredRegions: string[]; // Areas where details were recovered
-  originalNoiseLevel: 'Low' | 'Medium' | 'High';
-}
-
-// Agent Rho (Surface/Substrate)
-export interface SurfaceAnalysis {
-  surfaceMaterial: string; // e.g., "Glass", "Paper", "Tape", "Skin"
-  textureInterference: 'None' | 'Low' | 'High';
-  backgroundNoiseType: string; // e.g., "Grainy", "Patterned"
-}
-
-// Agent Phi (Bayesian Stats)
-export interface BayesianAnalysis {
-  randomCorrespondenceProbability: string; // e.g., "1 in 10 Billion"
-  likelihoodRatio: number; // Numeric ratio
-  statisticalStrength: 'Conclusive' | 'Very Strong' | 'Strong' | 'Moderate' | 'Weak';
-}
-
-// Agent Nu (Action/Timeline)
-export interface ActionReconstruction {
-  estimatedAction: string; // e.g., "Grasping", "Pushing", "Touching"
-  handOrientation: string; // e.g., "Vertical", "Angled 45deg"
-  timeDecayEstimate: string; // e.g., "Fresh (<24h)", "Old"
-  pressureDistribution: string; // Description of force
-}
-
-// NEW: Agent Psi (Multi-Fingerprint Crosslinker)
-export interface CrossLinkingAnalysis {
-  isSameSource: boolean; // Does the agent believe they are from the same biological entity?
-  crossSurfaceMatch: boolean; // Do they match despite different surfaces?
-  linkageConfidence: number; // 0-100
-  consistencyCheck: string; // e.g. "Consistent ridge flow across surfaces"
-}
-
-// Agent Omega (Legal/Expert Witness)
-export interface LegalAssessment {
-  admissibilityStatus: 'مقبول بقوة' | 'مقبول بحذر' | 'غير صالح قانونياً';
-  legalConfidenceScore: number; // 0-100
-  defenseNotes: string; // What might the defense lawyer argue?
-  finalExpertStatement: string; // Formal Arabic statement
-}
-
-export interface QualityAnalysis {
-  isUsable: boolean;
-  qualityScore: number;
-  issues: string[];
-  recommendation: string;
-}
-
-export interface ForgeryAnalysis {
-  isAuthentic: boolean;
-  authenticityScore: number;
-  riskFactors: string[];
-  livenessIndicators: string[];
-}
+// --- MAIN RESULT INTERFACE ---
 
 export interface ChainOfCustody {
   file1Hash: string;
@@ -136,43 +70,30 @@ export interface ChainOfCustody {
   integrityVerified: boolean;
 }
 
+export interface AnatomicalMapping {
+  points: Array<{ label: string; zone1: string; zone2: string; confidence: number; }>;
+  score: number;
+  conclusion: string;
+}
+
 export interface ComparisonResult {
   chainOfCustody: ChainOfCustody;
   
-  // Pre-processing Agents
-  agentDelta: { file1: QualityAnalysis; file2: QualityAnalysis; }; // Quality
-  agentLambda: { file1: ForensicEnhancement; file2: ForensicEnhancement; }; // Enhancement
-  agentRho: { file1: SurfaceAnalysis; file2: SurfaceAnalysis; }; // Surface
+  // The 5 Phases of the Quantum Orchestrator
+  phase1: Phase1Structural;
+  phase2: Phase2Micro;
+  phase3: Phase3Statistical;
+  phase4: Phase4Reconstruction;
+  phase5: Phase5Consolidation;
 
-  // Security
-  agentEpsilon: { file1: ForgeryAnalysis; file2: ForgeryAnalysis; }; // Forgery
+  // Visual Mapping Data (Passed from Agent Iota)
+  visualMapping?: AnatomicalMapping;
 
-  // Core Analysis Agents
-  agentAlpha: FingerprintAnalysis; // Source
-  agentBeta: FingerprintAnalysis; // Target
-  agentZeta: { file1: MinutiaeStats; file2: MinutiaeStats; }; // Galton
-  agentSigma: { file1: BiologicalAnalysis; file2: BiologicalAnalysis; }; // Level 3
-
-  // Mechanical & Context Agents
-  agentTheta: { file1: DistortionAnalysis; file2: DistortionAnalysis; }; // Distortion
-  agentNu: { file1: ActionReconstruction; file2: ActionReconstruction; }; // Action/Timeline
-  agentKappa: ScaleAnalysis; // Scale/Subset
-
-  // Comparison Agents
-  agentGamma: DetailedComparison; // Text Comparison
-  agentIota: AnatomicalMapping; // Visual Mapping
-  
-  // Advanced Stats & Linking
-  agentPhi: BayesianAnalysis; // Bayesian Stats
-  agentPsi: CrossLinkingAnalysis; // Crosslinker (Agent 16)
-
-  // Final Legal
-  agentOmega: LegalAssessment;
-  
+  // Final Verdict
   finalResult: {
-    matchScore: number;
+    matchScore: number; // 0-100
     isMatch: boolean;
-    confidenceLevel: 'عالية' | 'متوسطة' | 'منخفضة';
+    confidenceLevel: 'High' | 'Medium' | 'Low';
     forensicConclusion: string;
   };
 }
@@ -183,9 +104,4 @@ export interface HistoryRecord {
   file1Name: string;
   file2Name: string;
   result: ComparisonResult;
-}
-
-export enum UploadSide {
-  LEFT = 'LEFT',
-  RIGHT = 'RIGHT'
 }
