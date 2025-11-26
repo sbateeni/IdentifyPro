@@ -2,7 +2,7 @@
 import { HistoryRecord } from "../types";
 
 const DB_NAME = 'RidgeAiDB';
-const DB_VERSION = 4; // Incremented for stats store
+const DB_VERSION = 5; // Incremented for request counting
 const STORE_SETTINGS = 'settings';
 const STORE_HISTORY = 'history';
 const STORE_STATS = 'stats';
@@ -13,7 +13,7 @@ const KEY_PROVIDER = 'ai_provider';
 const KEY_OPENROUTER_API_KEY = 'openrouter_api_key';
 
 // Stats Keys
-const KEY_DAILY_USAGE = 'daily_token_usage';
+const KEY_DAILY_REQUESTS = 'daily_request_count'; // Changed from token usage
 const KEY_LAST_RESET_DATE = 'last_reset_date';
 
 const openDB = (): Promise<IDBDatabase> => {
@@ -46,9 +46,9 @@ const openDB = (): Promise<IDBDatabase> => {
   });
 };
 
-// --- STATS & TOKENS OPERATIONS ---
+// --- STATS & REQUESTS OPERATIONS ---
 
-export const saveTokenUsage = async (tokensUsed: number): Promise<void> => {
+export const saveRequestUsage = async (increment: number = 1): Promise<void> => {
   try {
     const db = await openDB();
     const tx = db.transaction(STORE_STATS, 'readwrite');
@@ -67,13 +67,13 @@ export const saveTokenUsage = async (tokensUsed: number): Promise<void> => {
       if (lastReset !== todayStr) {
         // New day, reset
         store.put(todayStr, KEY_LAST_RESET_DATE);
-        currentUsage = tokensUsed;
+        currentUsage = increment;
       } else {
         // Same day, fetch current usage
-        const usageReq = store.get(KEY_DAILY_USAGE);
+        const usageReq = store.get(KEY_DAILY_REQUESTS);
         usageReq.onsuccess = () => {
           const stored = usageReq.result;
-          currentUsage = (typeof stored === 'number' ? stored : 0) + tokensUsed;
+          currentUsage = (typeof stored === 'number' ? stored : 0) + increment;
           finishSave(currentUsage);
         };
         return; // Wait for inner async
@@ -83,17 +83,17 @@ export const saveTokenUsage = async (tokensUsed: number): Promise<void> => {
     };
 
     function finishSave(usage: number) {
-      store.put(usage, KEY_DAILY_USAGE);
+      store.put(usage, KEY_DAILY_REQUESTS);
       // Dispatch custom event to update UI immediately
-      window.dispatchEvent(new CustomEvent('tokensUpdated', { detail: usage }));
+      window.dispatchEvent(new CustomEvent('requestsUpdated', { detail: usage }));
     }
 
   } catch (error) {
-    console.error("Error saving token usage:", error);
+    console.error("Error saving request usage:", error);
   }
 };
 
-export const getTokenUsage = async (): Promise<number> => {
+export const getRequestUsage = async (): Promise<number> => {
   try {
     const db = await openDB();
     return new Promise((resolve) => {
@@ -106,7 +106,7 @@ export const getTokenUsage = async (): Promise<number> => {
         if (dateReq.result !== todayStr) {
           resolve(0); // It's a new day effectively
         } else {
-          const usageReq = store.get(KEY_DAILY_USAGE);
+          const usageReq = store.get(KEY_DAILY_REQUESTS);
           usageReq.onsuccess = () => {
             resolve(usageReq.result || 0);
           };

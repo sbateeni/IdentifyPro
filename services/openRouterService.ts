@@ -1,6 +1,6 @@
 
 import { ComparisonResult } from "../types";
-import { getOpenRouterKey, saveTokenUsage } from "./db";
+import { getOpenRouterKey, saveRequestUsage } from "./db";
 
 const calculateSHA256 = async (file: File): Promise<string> => {
   const buffer = await file.arrayBuffer();
@@ -49,7 +49,14 @@ export const compareFingerprintsOpenRouter = async (file1: File, file2: File): P
       All JSON string values (like "High", "Low", "Match") MUST be output in **ARABIC** (e.g., "عالية", "منخفضة", "متطابق"). Do NOT use English for values. Keys must remain in English.
 
       ⚠️ **CRITICAL FOR AGENT IOTA**: 
-      Find ALL reliable matching points. If you find less than 12 points (e.g., 3, 5, or 8), report ONLY the actual points found. DO NOT fabricate points to reach 12. Even if the count is low, return the visual mapping for those few points. Transparency is the highest priority.
+      STRICT SWGFAST STANDARDS apply.
+      1. Exclude "Core" (المركز), "Delta" (المثلث), and "Convergence" (التقارب) from the official point count. They are references only.
+      2. Count ONLY: Bifurcations (تفرع), Ridge Endings (نهاية), Dots (نقطة), Islands (جزيرة).
+      3. **THRESHOLDS**:
+         - Less than 8 valid points: Conclusion MUST be "Insufficient" (غير كافٍ للمقارنة).
+         - 8 to 11 valid points: Conclusion MUST be "Partial/Investigative" (تطابق جزئي استرشادي) with a LEGAL DISCLAIMER.
+         - 12+ valid points: Conclusion can be "Conclusive" (تطابق جنائي قاطع).
+      4. Transparency: Report the exact number found. Do not inflate.
 
       IMPORTANT: You must output ONLY valid JSON using the structure provided below.
     `;
@@ -109,10 +116,8 @@ export const compareFingerprintsOpenRouter = async (file1: File, file2: File): P
 
     const data = await response.json();
     
-    // 1. Save Token Usage
-    if (data.usage && data.usage.total_tokens) {
-      await saveTokenUsage(data.usage.total_tokens);
-    }
+    // 1. Save Request Usage (Increment by 1)
+    await saveRequestUsage(1);
 
     const content = data.choices[0]?.message?.content;
 

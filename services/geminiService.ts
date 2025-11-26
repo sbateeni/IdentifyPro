@@ -1,7 +1,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 import { ComparisonResult } from "../types";
-import { getApiKey, getPaidMode, saveTokenUsage } from "./db";
+import { getApiKey, getPaidMode, saveRequestUsage } from "./db";
 
 // Helper to calculate SHA-256 Hash for Chain of Custody
 const calculateSHA256 = async (file: File): Promise<string> => {
@@ -68,47 +68,16 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
 
       🚨 **IMPORTANT INSTRUCTION ON LANGUAGE**:
       All JSON string values (like "High", "Low", "Match", "Loop", "Paper") MUST be output in **ARABIC** (e.g., "عالية", "منخفضة", "متطابق", "حلقة", "ورق"). Do NOT use English for values. Keys must remain in English.
-
-      🔗 **آلية التفاعل (Workflow)**:
-
-      **المرحلة 1: البنيوي (Structural)**
-      - Alpha: تصنيف النمط -> يُرسل corePoint لـ Gamma.
-      - Beta: جودة الصورة -> ❗إذا SNR منخفض: أرسل DIRECTIVE:STOP.
-      - Gamma: تدفق الحواف.
-      - Delta: التحويل الرياضي.
-      - Epsilon: منطقة الاهتمام (ROI).
-      - Rho: نسيج السطح -> يُرسل نمط الضوضاء لـ Fornax.
-      - Lyra: الأبعاد الهندسية.
-      - Helios: تصحيح الإضاءة -> يطبق CLAHE.
-
-      **المرحلة 2: التفاصيل الدقيقة (Micro)**
-      - Zeta: نقاط التفرع -> يستقبل مناطق التشوه من Gamma.
-      - Sigma: المسام (Level 3).
-      - Theta: التشويه المرن -> يُرسل توجيهات لـ Vulcan للإصلاح.
-      - Kappa: المقاييس -> يتحقق من Lyra.
-      - Iota: الرسم التوضيحي (Visual Mapper). 
-        ⚠️ **CRITICAL FOR IOTA**: Find ALL reliable matching points. If you find less than 12 points (e.g., 3, 5, or 8), report ONLY the actual points found. DO NOT fabricate points to reach 12. Even if the count is low, return the visual mapping for those few points. Transparency is the highest priority.
-      - Quanta: تفاصيل تحت البكسل.
-
-      **المرحلة 3: الإحصاء والربط (Statistical)**
-      - Phi: بايزي (Likelihood Ratio).
-      - Psi: ربط الهوية عبر الوسائط (Cross-Linking).
-      - Atlas: ندرة السمة عالميًا.
-      - Chronos: عمر البصمة -> يُحذر Psi إذا العمر كبير.
-      - Tactus: خريطة الضغط.
-      - Spectra: محاكاة المواد (دم/حبر).
-
-      **المرحلة 4: إعادة البناء (Reconstruction)**
-      - Morphix: ترميم الحواف.
-      - Orion: استقراء الأنماط.
-      - Vulcan: التشوه الحراري -> يُصلح ويعيد لـ Zeta.
-      - Hermes: ضبابية الحركة.
-      - Nemesis: كشف التزييف -> ❗إذا اكتشف زيفًا: DIRECTIVE:ABORT.
-      - Fornax: إزالة التداخل.
-
-      **المرحلة 5: الحكم (Consolidation)**
-      - Aegis: محامي الدفاع -> يفحص كل وكيل بحثاً عن تناقضات.
-      - Omega: الخبير الختامي -> يصدر الحكم فقط بعد موافقة Aegis.
+      
+      ⚠️ **CRITICAL FOR AGENT IOTA**: 
+      STRICT SWGFAST STANDARDS apply.
+      1. Exclude "Core" (المركز), "Delta" (المثلث), and "Convergence" (التقارب) from the official point count. They are references only.
+      2. Count ONLY: Bifurcations (تفرع), Ridge Endings (نهاية), Dots (نقطة), Islands (جزيرة).
+      3. **THRESHOLDS**:
+         - Less than 8 valid points: Conclusion MUST be "Insufficient" (غير كافٍ للمقارنة).
+         - 8 to 11 valid points: Conclusion MUST be "Partial/Investigative" (تطابق جزئي استرشادي) with a LEGAL DISCLAIMER.
+         - 12+ valid points: Conclusion can be "Conclusive" (تطابق جنائي قاطع).
+      4. Transparency: Report the exact number found. Do not inflate.
 
       IMPORTANT: You must output ONLY valid JSON.
       STRICTLY FOLLOW THIS JSON STRUCTURE EXAMPLE (Values in Arabic):
@@ -156,7 +125,7 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
         agentOmega: { ...agentEx, finalExpertStatement: "تطابق مؤكد", admissibility: "High", legalConfidence: 99 }
       },
       visualMapping: {
-        points: [{ label: "المركز", zone1: "center", zone2: "center", confidence: 0.99 }],
+        points: [{ label: "تفرع (Bifurcation)", zone1: "center", zone2: "center", confidence: 0.99 }],
         score: 100,
         conclusion: "تطابق تام"
       },
@@ -191,10 +160,8 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
     });
 
     if (response.text) {
-      // 1. Save Token Usage
-      if (response.usageMetadata && response.usageMetadata.totalTokenCount) {
-         await saveTokenUsage(response.usageMetadata.totalTokenCount);
-      }
+      // 1. Save Request Usage (Increment by 1 for successful request)
+      await saveRequestUsage(1);
 
       const aiData = JSON.parse(response.text);
       const finalResult: ComparisonResult = {
