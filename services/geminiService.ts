@@ -1,7 +1,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 import { ComparisonResult } from "../types";
-import { getApiKey, getPaidMode } from "./db";
+import { getApiKey, getPaidMode, saveTokenUsage } from "./db";
 
 // Helper to calculate SHA-256 Hash for Chain of Custody
 const calculateSHA256 = async (file: File): Promise<string> => {
@@ -66,6 +66,9 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
       4. **Aegis (المحامي)**: يُحقق من كل وكيل للبحث عن الثغرات.
       5. **اللغة**: العربية الفصحى الجنائية.
 
+      🚨 **IMPORTANT INSTRUCTION ON LANGUAGE**:
+      All JSON string values (like "High", "Low", "Match", "Loop", "Paper") MUST be output in **ARABIC** (e.g., "عالية", "منخفضة", "متطابق", "حلقة", "ورق"). Do NOT use English for values. Keys must remain in English.
+
       🔗 **آلية التفاعل (Workflow)**:
 
       **المرحلة 1: البنيوي (Structural)**
@@ -106,66 +109,61 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
       - Aegis: محامي الدفاع -> يفحص كل وكيل بحثاً عن تناقضات.
       - Omega: الخبير الختامي -> يصدر الحكم فقط بعد موافقة Aegis.
 
-      🚨 **سيناريوهات الطوارئ**:
-      - اكتشاف تزييف (Nemesis): يوقف الوكلاء ويصدر إنذار.
-      - انخفاض جودة (Beta): يرفض الصورة.
-
       IMPORTANT: You must output ONLY valid JSON.
-      STRICTLY FOLLOW THIS JSON STRUCTURE EXAMPLE:
+      STRICTLY FOLLOW THIS JSON STRUCTURE EXAMPLE (Values in Arabic):
     `;
 
     // Define the expected structure as an example object to guide the model
-    // This avoids the "Constraint is too tall" error from strict Schema validation
-    const agentEx = { confidence: 0.95, directives: ["No alerts"] };
+    const agentEx = { confidence: 0.95, directives: ["لا توجد تنبيهات"] };
     const jsonStructureExample = {
       phase1: {
-        agentAlpha: { ...agentEx, patternType: "Loop" },
-        agentBeta: { ...agentEx, qualityMetric: "Accepted", noiseLevel: "Low" },
-        agentGamma: { ...agentEx, ridgeFlow: "Normal", bifurcationCount: 15 },
-        agentDelta: { ...agentEx, featureVectorSize: 512, mathematicalComplexity: "High" },
-        agentEpsilon: { ...agentEx, reconstructionNeeded: false, partialArea: "None" },
-        agentRho: { ...agentEx, substrateAnalysis: "Paper", indirectReflection: false },
-        agentLyra: { ...agentEx, geometry: "Normal", symmetry: "High" },
-        agentHelios: { ...agentEx, lightingCorrection: "Applied", shadowRemoved: true }
+        agentAlpha: { ...agentEx, patternType: "حلقة زندية" },
+        agentBeta: { ...agentEx, qualityMetric: "مقبولة", noiseLevel: "منخفضة" },
+        agentGamma: { ...agentEx, ridgeFlow: "طبيعي", bifurcationCount: 15 },
+        agentDelta: { ...agentEx, featureVectorSize: 512, mathematicalComplexity: "عالية" },
+        agentEpsilon: { ...agentEx, reconstructionNeeded: false, partialArea: "لا يوجد" },
+        agentRho: { ...agentEx, substrateAnalysis: "ورق", indirectReflection: false },
+        agentLyra: { ...agentEx, geometry: "طبيعية", symmetry: "عالية" },
+        agentHelios: { ...agentEx, lightingCorrection: "تم التطبيق", shadowRemoved: true }
       },
       phase2: {
-        agentZeta: { ...agentEx, matchPrecision: "High", minutiaePairs: 20 },
-        agentSigma: { ...agentEx, poreCount: 50, edgeShape: "Smooth" },
+        agentZeta: { ...agentEx, matchPrecision: "عالية", minutiaePairs: 20 },
+        agentSigma: { ...agentEx, poreCount: 50, edgeShape: "ملساء" },
         agentTheta: { ...agentEx, distortionDetected: false, torsionAngle: 0 },
         agentKappa: { ...agentEx, scaleRatio: 1.0, subsetMatch: true },
-        agentIota: { ...agentEx, anatomicalLandmarks: 10, visualPath: "Clear" },
-        agentQuanta: { ...agentEx, nanoDetails: "Verified", subPixelAccuracy: 95 }
+        agentIota: { ...agentEx, anatomicalLandmarks: 10, visualPath: "واضحة" },
+        agentQuanta: { ...agentEx, nanoDetails: "تم التحقق", subPixelAccuracy: 95 }
       },
       phase3: {
-        agentPhi: { ...agentEx, likelihoodRatio: 1000, prc: "High" },
+        agentPhi: { ...agentEx, likelihoodRatio: 1000, prc: "عالية" },
         agentPsi: { ...agentEx, crossLinkConfirmed: true, sourceIdentityConfidence: 99 },
-        agentAtlas: { ...agentEx, globalDbSearch: "Done", frequencyRarity: "Rare" },
-        agentChronos: { ...agentEx, timeDecay: "None", ageEstimation: "Recent" },
-        agentTactus: { ...agentEx, pressureMap: "Even", touchForce: 5 },
-        agentSpectra: { ...agentEx, spectralAnalysis: "Ink", chemicalResidueSimulation: "None" }
+        agentAtlas: { ...agentEx, globalDbSearch: "تم البحث", frequencyRarity: "نادرة" },
+        agentChronos: { ...agentEx, timeDecay: "لا يوجد", ageEstimation: "حديثة" },
+        agentTactus: { ...agentEx, pressureMap: "متساوية", touchForce: 5 },
+        agentSpectra: { ...agentEx, spectralAnalysis: "حبر", chemicalResidueSimulation: "لا يوجد" }
       },
       phase4: {
-        agentMorphix: { ...agentEx, missingRidgeReconstruction: "None", percentRestored: 0 },
-        agentOrion: { ...agentEx, patternExtrapolation: "Complete" },
-        agentVulcan: { ...agentEx, heatDistortionSim: "None", plasticDeformation: false },
-        agentHermes: { ...agentEx, transferMethod: "Direct", motionBlurCorrection: "None" },
-        agentNemesis: { ...agentEx, antiSpoofingAdvanced: "Live", livenessScore: 99 },
-        agentFornax: { ...agentEx, digitalNoiseFilter: "Applied", artifactRemoval: 0 }
+        agentMorphix: { ...agentEx, missingRidgeReconstruction: "لا يلزم", percentRestored: 0 },
+        agentOrion: { ...agentEx, patternExtrapolation: "مكتمل" },
+        agentVulcan: { ...agentEx, heatDistortionSim: "لا يوجد", plasticDeformation: false },
+        agentHermes: { ...agentEx, transferMethod: "مباشر", motionBlurCorrection: "لا يوجد" },
+        agentNemesis: { ...agentEx, antiSpoofingAdvanced: "حيوي", livenessScore: 99 },
+        agentFornax: { ...agentEx, digitalNoiseFilter: "تم التطبيق", artifactRemoval: 0 }
       },
       phase5: {
-        agentAegis: { ...agentEx, defenseRebuttal: "No loopholes", loopholeCheck: "Pass" },
-        agentOmega: { ...agentEx, finalExpertStatement: "Match", admissibility: "High", legalConfidence: 99 }
+        agentAegis: { ...agentEx, defenseRebuttal: "لا توجد ثغرات", loopholeCheck: "اجتياز" },
+        agentOmega: { ...agentEx, finalExpertStatement: "تطابق مؤكد", admissibility: "High", legalConfidence: 99 }
       },
       visualMapping: {
-        points: [{ label: "Core", zone1: "center", zone2: "center", confidence: 0.99 }],
+        points: [{ label: "المركز", zone1: "center", zone2: "center", confidence: 0.99 }],
         score: 100,
-        conclusion: "Perfect Match"
+        conclusion: "تطابق تام"
       },
       finalResult: {
         matchScore: 99,
         isMatch: true,
         confidenceLevel: "High",
-        forensicConclusion: "Conclusive"
+        forensicConclusion: "قطعي"
       }
     };
 
@@ -173,7 +171,6 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
 
     const generationConfig: any = {
       responseMimeType: "application/json",
-      // responseSchema REMOVED to avoid "Constraint is too tall" error
     };
 
     if (thinkingBudget > 0) {
@@ -193,6 +190,11 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
     });
 
     if (response.text) {
+      // 1. Save Token Usage
+      if (response.usageMetadata && response.usageMetadata.totalTokenCount) {
+         await saveTokenUsage(response.usageMetadata.totalTokenCount);
+      }
+
       const aiData = JSON.parse(response.text);
       const finalResult: ComparisonResult = {
         chainOfCustody: {

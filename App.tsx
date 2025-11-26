@@ -5,6 +5,7 @@ import Results from './components/Results';
 import SettingsModal from './components/SettingsModal';
 import HistorySidebar from './components/HistorySidebar';
 import AgentsGuideModal from './components/AgentsGuideModal';
+import TokenTracker from './components/TokenTracker'; // Imported TokenTracker
 import { compareFingerprints } from './services/geminiService';
 import { compareFingerprintsOpenRouter } from './services/openRouterService';
 import { saveHistory, getProvider } from './services/db';
@@ -98,8 +99,6 @@ const App: React.FC = () => {
   const handleHistorySelect = (record: HistoryRecord) => {
     setResult(record.result);
     
-    // Restore the files from the saved Blob data
-    // Added safety check: ensure file1Data exists before creating File object
     if (record.file1Data) {
       try {
         const restoredFile1 = new File([record.file1Data], record.file1Name, { type: record.file1Data.type });
@@ -112,7 +111,6 @@ const App: React.FC = () => {
       setFile1(null);
     }
 
-    // Added safety check: ensure file2Data exists before creating File object
     if (record.file2Data) {
       try {
         const restoredFile2 = new File([record.file2Data], record.file2Name, { type: record.file2Data.type });
@@ -125,7 +123,6 @@ const App: React.FC = () => {
       setFile2(null);
     }
     
-    // Scroll to results
     setTimeout(() => {
       document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
@@ -153,6 +150,9 @@ const App: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-2 md:gap-3">
+            
+            {/* TOKEN TRACKER INSERTED HERE */}
+            <TokenTracker />
             
             <button
               onClick={() => setIsGuideOpen(true)}
