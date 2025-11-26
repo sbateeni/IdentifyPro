@@ -1,60 +1,57 @@
 
 // --- Common Sub-Types ---
 
-export interface AgentResult {
-  agentName: string;
-  status: 'Active' | 'Idle';
-  outputSummary: string;
-  score?: number; // 0-100
-  details?: Record<string, string | number | boolean>;
+export interface AgentBase {
+  confidence: number; // 0.0 to 1.0
+  directives: string[]; // List of commands/warnings to other agents
 }
 
 // --- PHASE 1: Structural Analysis (Alpha - Helios) ---
 export interface Phase1Structural {
-  agentAlpha: { patternType: string; confidence: number; };
-  agentBeta: { qualityMetric: string; noiseLevel: string; };
-  agentGamma: { ridgeFlow: string; bifurcationCount: number; };
-  agentDelta: { featureVectorSize: number; mathematicalComplexity: string; };
-  agentEpsilon: { reconstructionNeeded: boolean; partialArea: string; };
-  agentRho: { substrateAnalysis: string; indirectReflection: boolean; }; // Moved Rho here as per prompt pipeline
-  agentLyra: { geometry: string; symmetry: string; }; // Hypothetical agent from "Helios" group in prompt
-  agentHelios: { lightingCorrection: string; shadowRemoved: boolean; };
+  agentAlpha: AgentBase & { patternType: string; };
+  agentBeta: AgentBase & { qualityMetric: string; noiseLevel: string; };
+  agentGamma: AgentBase & { ridgeFlow: string; bifurcationCount: number; };
+  agentDelta: AgentBase & { featureVectorSize: number; mathematicalComplexity: string; };
+  agentEpsilon: AgentBase & { reconstructionNeeded: boolean; partialArea: string; };
+  agentRho: AgentBase & { substrateAnalysis: string; indirectReflection: boolean; };
+  agentLyra: AgentBase & { geometry: string; symmetry: string; };
+  agentHelios: AgentBase & { lightingCorrection: string; shadowRemoved: boolean; };
 }
 
 // --- PHASE 2: Minutiae & Micro Analysis (Zeta - Quanta) ---
 export interface Phase2Micro {
-  agentZeta: { matchPrecision: string; minutiaePairs: number; };
-  agentSigma: { poreCount: number; edgeShape: string; };
-  agentTheta: { distortionDetected: boolean; torsionAngle: number; };
-  agentKappa: { scaleRatio: number; subsetMatch: boolean; };
-  agentIota: { anatomicalLandmarks: number; visualPath: string; };
-  agentQuanta: { nanoDetails: string; subPixelAccuracy: number; };
+  agentZeta: AgentBase & { matchPrecision: string; minutiaePairs: number; };
+  agentSigma: AgentBase & { poreCount: number; edgeShape: string; };
+  agentTheta: AgentBase & { distortionDetected: boolean; torsionAngle: number; };
+  agentKappa: AgentBase & { scaleRatio: number; subsetMatch: boolean; };
+  agentIota: AgentBase & { anatomicalLandmarks: number; visualPath: string; };
+  agentQuanta: AgentBase & { nanoDetails: string; subPixelAccuracy: number; };
 }
 
 // --- PHASE 3: Statistical & Linking (Phi - Spectra) ---
 export interface Phase3Statistical {
-  agentPhi: { likelihoodRatio: number; prc: string; }; // Bayesian
-  agentPsi: { crossLinkConfirmed: boolean; sourceIdentityConfidence: number; };
-  agentAtlas: { globalDbSearch: string; frequencyRarity: string; };
-  agentChronos: { timeDecay: string; ageEstimation: string; };
-  agentTactus: { pressureMap: string; touchForce: number; };
-  agentSpectra: { spectralAnalysis: string; chemicalResidueSimulation: string; };
+  agentPhi: AgentBase & { likelihoodRatio: number; prc: string; };
+  agentPsi: AgentBase & { crossLinkConfirmed: boolean; sourceIdentityConfidence: number; };
+  agentAtlas: AgentBase & { globalDbSearch: string; frequencyRarity: string; };
+  agentChronos: AgentBase & { timeDecay: string; ageEstimation: string; };
+  agentTactus: AgentBase & { pressureMap: string; touchForce: number; };
+  agentSpectra: AgentBase & { spectralAnalysis: string; chemicalResidueSimulation: string; };
 }
 
 // --- PHASE 4: Reconstruction & Simulation (Morphix - Fornax) ---
 export interface Phase4Reconstruction {
-  agentMorphix: { missingRidgeReconstruction: string; percentRestored: number; };
-  agentOrion: { patternExtrapolation: string; };
-  agentVulcan: { heatDistortionSim: string; plasticDeformation: boolean; };
-  agentHermes: { transferMethod: string; motionBlurCorrection: string; };
-  agentNemesis: { antiSpoofingAdvanced: string; livenessScore: number; };
-  agentFornax: { digitalNoiseFilter: string; artifactRemoval: number; };
+  agentMorphix: AgentBase & { missingRidgeReconstruction: string; percentRestored: number; };
+  agentOrion: AgentBase & { patternExtrapolation: string; };
+  agentVulcan: AgentBase & { heatDistortionSim: string; plasticDeformation: boolean; };
+  agentHermes: AgentBase & { transferMethod: string; motionBlurCorrection: string; };
+  agentNemesis: AgentBase & { antiSpoofingAdvanced: string; livenessScore: number; };
+  agentFornax: AgentBase & { digitalNoiseFilter: string; artifactRemoval: number; };
 }
 
-// --- PHASE 5: Consolidation (Psi - Aegis) ---
+// --- PHASE 5: Consolidation (Aegis - Omega) ---
 export interface Phase5Consolidation {
-  agentAegis: { defenseRebuttal: string; loopholeCheck: string; };
-  agentOmega: { 
+  agentAegis: AgentBase & { defenseRebuttal: string; loopholeCheck: string; };
+  agentOmega: AgentBase & { 
     finalExpertStatement: string; 
     admissibility: 'High' | 'Medium' | 'Low'; 
     legalConfidence: number; 
@@ -103,7 +100,7 @@ export interface HistoryRecord {
   timestamp: number;
   file1Name: string;
   file2Name: string;
-  file1Data?: Blob; // Store the actual image blob
-  file2Data?: Blob; // Store the actual image blob
+  file1Data?: Blob;
+  file2Data?: Blob;
   result: ComparisonResult;
 }

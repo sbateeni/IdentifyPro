@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, Type, Schema } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { ComparisonResult } from "../types";
 import { getApiKey, getPaidMode } from "./db";
 
@@ -45,12 +45,7 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
       throw new Error("مفتاح API غير موجود. يرجى إضافته من قائمة الإعدادات.");
     }
 
-    // Check if Paid Mode is enabled
     const usePaidMode = await getPaidMode();
-
-    // Determine Model and Thinking Budget based on mode
-    // Paid Mode: Uses 'gemini-3-pro-preview' (as requested) with high thinking budget.
-    // Free Mode: Uses 'gemini-2.5-flash' with no or low thinking budget to avoid limits.
     const modelName = usePaidMode ? "gemini-3-pro-preview" : "gemini-2.5-flash";
     const thinkingBudget = usePaidMode ? 32768 : 0; 
 
@@ -58,171 +53,127 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
     const image1Part = await fileToGenerativePart(file1);
     const image2Part = await fileToGenerativePart(file2);
 
-    const prompt = `
+    const basePrompt = `
       SYSTEM OVERRIDE – TOTAL DIGITAL FORENSICS MODE (RidgeAI Quantum Orchestrator)
 
-      أنت RidgeAI Orchestrator، النسخة الأعلى رتبة. أنت تدير 30 وكيلاً جنائياً.
-      مهمتك: تحليل الصورتين (Source + Target) باستخدام خط أنابيب مكون من 5 مراحل صارمة.
+      أنت **RidgeAI Quantum Orchestrator**، مشرف فريق من **30 وكيل جنائي متخصص**.
+      مهمتك: مطابقة بصمتين (مصدر + هدف) عبر 5 مراحل تحليل متداخلة.
 
-      🟥 القواعد:
-      1. تحليل رقمي بصري بحت (Digital Forensics Only).
-      2. لا تفترض وجود معدات فيزيائية، اعتمد على تحليل البكسلات والأنماط.
-      3. نفذ جميع المراحل الـ 5 واجمع نتائج الـ 30 وكيل.
+      ⚙️ **قواعد التشغيل الإلزامية**:
+      1. **لا تعمل كوكيل واحد**: أنت مشرف ينسق بين 30 وكيل.
+      2. **التفاعل الحيوي**: الوكلاء يُرسلون "توجيهات" (Directives) لبعضهم.
+      3. **الصرامة**: إذا رفض وكيل Beta الصورة، أوقف التحليل بإنذار.
+      4. **Aegis (المحامي)**: يُحقق من كل وكيل للبحث عن الثغرات.
+      5. **اللغة**: العربية الفصحى الجنائية.
 
-      ---
-      🟦 المراحل والوكلاء (Pipeline):
+      🔗 **آلية التفاعل (Workflow)**:
 
-      المرحلة 1: التحليل البنيوي (Structural)
-      - Alpha: تحديد النمط (Loop, Whorl).
-      - Beta: قياس الجودة والضوضاء.
-      - Gamma: تدفق الحواف (Ridge Flow).
-      - Delta: التعقيد الرياضي (Feature Vector).
-      - Epsilon: الحاجة لإعادة البناء.
-      - Rho: تحليل السطح (Substrate).
-      - Lyra: الهندسة والتناظر.
-      - Helios: تصحيح الإضاءة.
+      **المرحلة 1: البنيوي (Structural)**
+      - Alpha: تصنيف النمط -> يُرسل corePoint لـ Gamma.
+      - Beta: جودة الصورة -> ❗إذا SNR منخفض: أرسل DIRECTIVE:STOP.
+      - Gamma: تدفق الحواف.
+      - Delta: التحويل الرياضي.
+      - Epsilon: منطقة الاهتمام (ROI).
+      - Rho: نسيج السطح -> يُرسل نمط الضوضاء لـ Fornax.
+      - Lyra: الأبعاد الهندسية.
+      - Helios: تصحيح الإضاءة -> يطبق CLAHE.
 
-      المرحلة 2: التحليل الدقيق (Micro)
-      - Zeta: دقة التطابق للنقاط (Minutiae).
-      - Sigma: المسام والحواف (Level 3).
-      - Theta: كشف التشويه والالتواء.
-      - Kappa: القياس والاحتواء (Subset/Zoom).
-      - Iota: المعالم التشريحية (Visual Path).
-      - Quanta: تفاصيل النانو (Sub-pixel).
+      **المرحلة 2: التفاصيل الدقيقة (Micro)**
+      - Zeta: نقاط التفرع -> يستقبل مناطق التشوه من Gamma.
+      - Sigma: المسام (Level 3).
+      - Theta: التشويه المرن -> يُرسل توجيهات لـ Vulcan للإصلاح.
+      - Kappa: المقاييس -> يتحقق من Lyra.
+      - Iota: الرسم التوضيحي.
+      - Quanta: تفاصيل تحت البكسل.
 
-      المرحلة 3: الإحصاء والربط (Statistical)
+      **المرحلة 3: الإحصاء والربط (Statistical)**
       - Phi: بايزي (Likelihood Ratio).
-      - Psi: ربط الهوية الموحد (Identity Cross-Linker). هل تعود البصمتان لنفس الفرد بغض النظر عن اختلاف السطح أو طريقة الطبع؟
-      - Atlas: ندرة التردد العالمي.
-      - Chronos: تقدير تقادم الأثر.
-      - Tactus: محاكاة الضغط.
-      - Spectra: المحاكاة الطيفية.
+      - Psi: ربط الهوية عبر الوسائط (Cross-Linking).
+      - Atlas: ندرة السمة عالميًا.
+      - Chronos: عمر البصمة -> يُحذر Psi إذا العمر كبير.
+      - Tactus: خريطة الضغط.
+      - Spectra: محاكاة المواد (دم/حبر).
 
-      المرحلة 4: إعادة البناء (Reconstruction)
-      - Morphix: ترميم الحواف المفقودة.
+      **المرحلة 4: إعادة البناء (Reconstruction)**
+      - Morphix: ترميم الحواف.
       - Orion: استقراء الأنماط.
-      - Vulcan: محاكاة التشوه الحراري/اللدن.
-      - Hermes: تصحيح ضبابية الحركة.
-      - Nemesis: كشف التزييف المتقدم (Anti-Spoof).
-      - Fornax: إزالة التداخل الرقمي.
+      - Vulcan: التشوه الحراري -> يُصلح ويعيد لـ Zeta.
+      - Hermes: ضبابية الحركة.
+      - Nemesis: كشف التزييف -> ❗إذا اكتشف زيفًا: DIRECTIVE:ABORT.
+      - Fornax: إزالة التداخل.
 
-      المرحلة 5: الدمج (Consolidation)
-      - Aegis: فحص الثغرات الدفاعية.
-      - Omega: البيان الختامي للخبير.
+      **المرحلة 5: الحكم (Consolidation)**
+      - Aegis: محامي الدفاع -> يفحص كل وكيل بحثاً عن تناقضات.
+      - Omega: الخبير الختامي -> يصدر الحكم فقط بعد موافقة Aegis.
 
-      ---
-      المخرجات المطلوبة: JSON فقط، دقيق، باللغة العربية الفصحى (Forensic Arabic).
+      🚨 **سيناريوهات الطوارئ**:
+      - اكتشاف تزييف (Nemesis): يوقف الوكلاء ويصدر إنذار.
+      - انخفاض جودة (Beta): يرفض الصورة.
+
+      IMPORTANT: You must output ONLY valid JSON.
+      STRICTLY FOLLOW THIS JSON STRUCTURE EXAMPLE:
     `;
 
-    // --- DEFINING THE QUANTUM SCHEMA ---
-
-    // Phase 1
-    const p1Schema = {
-      type: Type.OBJECT,
-      properties: {
-        agentAlpha: { type: Type.OBJECT, properties: { patternType: { type: Type.STRING }, confidence: { type: Type.NUMBER } } },
-        agentBeta: { type: Type.OBJECT, properties: { qualityMetric: { type: Type.STRING }, noiseLevel: { type: Type.STRING } } },
-        agentGamma: { type: Type.OBJECT, properties: { ridgeFlow: { type: Type.STRING }, bifurcationCount: { type: Type.NUMBER } } },
-        agentDelta: { type: Type.OBJECT, properties: { featureVectorSize: { type: Type.NUMBER }, mathematicalComplexity: { type: Type.STRING } } },
-        agentEpsilon: { type: Type.OBJECT, properties: { reconstructionNeeded: { type: Type.BOOLEAN }, partialArea: { type: Type.STRING } } },
-        agentRho: { type: Type.OBJECT, properties: { substrateAnalysis: { type: Type.STRING }, indirectReflection: { type: Type.BOOLEAN } } },
-        agentLyra: { type: Type.OBJECT, properties: { geometry: { type: Type.STRING }, symmetry: { type: Type.STRING } } },
-        agentHelios: { type: Type.OBJECT, properties: { lightingCorrection: { type: Type.STRING }, shadowRemoved: { type: Type.BOOLEAN } } }
+    // Define the expected structure as an example object to guide the model
+    // This avoids the "Constraint is too tall" error from strict Schema validation
+    const agentEx = { confidence: 0.95, directives: ["No alerts"] };
+    const jsonStructureExample = {
+      phase1: {
+        agentAlpha: { ...agentEx, patternType: "Loop" },
+        agentBeta: { ...agentEx, qualityMetric: "Accepted", noiseLevel: "Low" },
+        agentGamma: { ...agentEx, ridgeFlow: "Normal", bifurcationCount: 15 },
+        agentDelta: { ...agentEx, featureVectorSize: 512, mathematicalComplexity: "High" },
+        agentEpsilon: { ...agentEx, reconstructionNeeded: false, partialArea: "None" },
+        agentRho: { ...agentEx, substrateAnalysis: "Paper", indirectReflection: false },
+        agentLyra: { ...agentEx, geometry: "Normal", symmetry: "High" },
+        agentHelios: { ...agentEx, lightingCorrection: "Applied", shadowRemoved: true }
       },
-      required: ["agentAlpha", "agentBeta", "agentGamma", "agentDelta", "agentEpsilon", "agentRho", "agentLyra", "agentHelios"]
+      phase2: {
+        agentZeta: { ...agentEx, matchPrecision: "High", minutiaePairs: 20 },
+        agentSigma: { ...agentEx, poreCount: 50, edgeShape: "Smooth" },
+        agentTheta: { ...agentEx, distortionDetected: false, torsionAngle: 0 },
+        agentKappa: { ...agentEx, scaleRatio: 1.0, subsetMatch: true },
+        agentIota: { ...agentEx, anatomicalLandmarks: 10, visualPath: "Clear" },
+        agentQuanta: { ...agentEx, nanoDetails: "Verified", subPixelAccuracy: 95 }
+      },
+      phase3: {
+        agentPhi: { ...agentEx, likelihoodRatio: 1000, prc: "High" },
+        agentPsi: { ...agentEx, crossLinkConfirmed: true, sourceIdentityConfidence: 99 },
+        agentAtlas: { ...agentEx, globalDbSearch: "Done", frequencyRarity: "Rare" },
+        agentChronos: { ...agentEx, timeDecay: "None", ageEstimation: "Recent" },
+        agentTactus: { ...agentEx, pressureMap: "Even", touchForce: 5 },
+        agentSpectra: { ...agentEx, spectralAnalysis: "Ink", chemicalResidueSimulation: "None" }
+      },
+      phase4: {
+        agentMorphix: { ...agentEx, missingRidgeReconstruction: "None", percentRestored: 0 },
+        agentOrion: { ...agentEx, patternExtrapolation: "Complete" },
+        agentVulcan: { ...agentEx, heatDistortionSim: "None", plasticDeformation: false },
+        agentHermes: { ...agentEx, transferMethod: "Direct", motionBlurCorrection: "None" },
+        agentNemesis: { ...agentEx, antiSpoofingAdvanced: "Live", livenessScore: 99 },
+        agentFornax: { ...agentEx, digitalNoiseFilter: "Applied", artifactRemoval: 0 }
+      },
+      phase5: {
+        agentAegis: { ...agentEx, defenseRebuttal: "No loopholes", loopholeCheck: "Pass" },
+        agentOmega: { ...agentEx, finalExpertStatement: "Match", admissibility: "High", legalConfidence: 99 }
+      },
+      visualMapping: {
+        points: [{ label: "Core", zone1: "center", zone2: "center", confidence: 0.99 }],
+        score: 100,
+        conclusion: "Perfect Match"
+      },
+      finalResult: {
+        matchScore: 99,
+        isMatch: true,
+        confidenceLevel: "High",
+        forensicConclusion: "Conclusive"
+      }
     };
 
-    // Phase 2
-    const p2Schema = {
-      type: Type.OBJECT,
-      properties: {
-        agentZeta: { type: Type.OBJECT, properties: { matchPrecision: { type: Type.STRING }, minutiaePairs: { type: Type.NUMBER } } },
-        agentSigma: { type: Type.OBJECT, properties: { poreCount: { type: Type.NUMBER }, edgeShape: { type: Type.STRING } } },
-        agentTheta: { type: Type.OBJECT, properties: { distortionDetected: { type: Type.BOOLEAN }, torsionAngle: { type: Type.NUMBER } } },
-        agentKappa: { type: Type.OBJECT, properties: { scaleRatio: { type: Type.NUMBER }, subsetMatch: { type: Type.BOOLEAN } } },
-        agentIota: { type: Type.OBJECT, properties: { anatomicalLandmarks: { type: Type.NUMBER }, visualPath: { type: Type.STRING } } },
-        agentQuanta: { type: Type.OBJECT, properties: { nanoDetails: { type: Type.STRING }, subPixelAccuracy: { type: Type.NUMBER } } }
-      },
-      required: ["agentZeta", "agentSigma", "agentTheta", "agentKappa", "agentIota", "agentQuanta"]
-    };
+    const finalPrompt = `${basePrompt}\n${JSON.stringify(jsonStructureExample, null, 2)}`;
 
-    // Phase 3
-    const p3Schema = {
-      type: Type.OBJECT,
-      properties: {
-        agentPhi: { type: Type.OBJECT, properties: { likelihoodRatio: { type: Type.NUMBER }, prc: { type: Type.STRING } } },
-        agentPsi: { type: Type.OBJECT, properties: { crossLinkConfirmed: { type: Type.BOOLEAN }, sourceIdentityConfidence: { type: Type.NUMBER } } },
-        agentAtlas: { type: Type.OBJECT, properties: { globalDbSearch: { type: Type.STRING }, frequencyRarity: { type: Type.STRING } } },
-        agentChronos: { type: Type.OBJECT, properties: { timeDecay: { type: Type.STRING }, ageEstimation: { type: Type.STRING } } },
-        agentTactus: { type: Type.OBJECT, properties: { pressureMap: { type: Type.STRING }, touchForce: { type: Type.NUMBER } } },
-        agentSpectra: { type: Type.OBJECT, properties: { spectralAnalysis: { type: Type.STRING }, chemicalResidueSimulation: { type: Type.STRING } } }
-      },
-      required: ["agentPhi", "agentPsi", "agentAtlas", "agentChronos", "agentTactus", "agentSpectra"]
-    };
-
-    // Phase 4
-    const p4Schema = {
-      type: Type.OBJECT,
-      properties: {
-        agentMorphix: { type: Type.OBJECT, properties: { missingRidgeReconstruction: { type: Type.STRING }, percentRestored: { type: Type.NUMBER } } },
-        agentOrion: { type: Type.OBJECT, properties: { patternExtrapolation: { type: Type.STRING } } },
-        agentVulcan: { type: Type.OBJECT, properties: { heatDistortionSim: { type: Type.STRING }, plasticDeformation: { type: Type.BOOLEAN } } },
-        agentHermes: { type: Type.OBJECT, properties: { transferMethod: { type: Type.STRING }, motionBlurCorrection: { type: Type.STRING } } },
-        agentNemesis: { type: Type.OBJECT, properties: { antiSpoofingAdvanced: { type: Type.STRING }, livenessScore: { type: Type.NUMBER } } },
-        agentFornax: { type: Type.OBJECT, properties: { digitalNoiseFilter: { type: Type.STRING }, artifactRemoval: { type: Type.NUMBER } } }
-      },
-      required: ["agentMorphix", "agentOrion", "agentVulcan", "agentHermes", "agentNemesis", "agentFornax"]
-    };
-
-    // Phase 5 & Final
-    const p5Schema = {
-      type: Type.OBJECT,
-      properties: {
-        agentAegis: { type: Type.OBJECT, properties: { defenseRebuttal: { type: Type.STRING }, loopholeCheck: { type: Type.STRING } } },
-        agentOmega: { type: Type.OBJECT, properties: { finalExpertStatement: { type: Type.STRING }, admissibility: { type: Type.STRING }, legalConfidence: { type: Type.NUMBER } } }
-      },
-      required: ["agentAegis", "agentOmega"]
-    };
-
-    const visualMappingSchema = {
-      type: Type.OBJECT,
-      properties: {
-        points: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { label: { type: Type.STRING }, zone1: { type: Type.STRING }, zone2: { type: Type.STRING }, confidence: { type: Type.NUMBER } } } },
-        score: { type: Type.NUMBER },
-        conclusion: { type: Type.STRING }
-      },
-      required: ["points", "score", "conclusion"]
-    };
-
-    const finalResultSchema = {
-      type: Type.OBJECT,
-      properties: {
-        matchScore: { type: Type.NUMBER },
-        isMatch: { type: Type.BOOLEAN },
-        confidenceLevel: { type: Type.STRING },
-        forensicConclusion: { type: Type.STRING }
-      },
-      required: ["matchScore", "isMatch", "confidenceLevel", "forensicConclusion"]
-    };
-
-    const responseSchema: Schema = {
-      type: Type.OBJECT,
-      properties: {
-        phase1: p1Schema,
-        phase2: p2Schema,
-        phase3: p3Schema,
-        phase4: p4Schema,
-        phase5: p5Schema,
-        visualMapping: visualMappingSchema,
-        finalResult: finalResultSchema
-      },
-      required: ["phase1", "phase2", "phase3", "phase4", "phase5", "visualMapping", "finalResult"]
-    };
-
-    // Define config based on mode
     const generationConfig: any = {
       responseMimeType: "application/json",
-      responseSchema: responseSchema,
+      // responseSchema REMOVED to avoid "Constraint is too tall" error
     };
 
     if (thinkingBudget > 0) {
@@ -235,7 +186,7 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
         parts: [
           image1Part,
           image2Part,
-          { text: prompt }
+          { text: finalPrompt }
         ]
       },
       config: generationConfig,
