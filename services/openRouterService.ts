@@ -48,6 +48,9 @@ export const compareFingerprintsOpenRouter = async (file1: File, file2: File): P
       🚨 **IMPORTANT INSTRUCTION ON LANGUAGE**:
       All JSON string values (like "High", "Low", "Match") MUST be output in **ARABIC** (e.g., "عالية", "منخفضة", "متطابق"). Do NOT use English for values. Keys must remain in English.
 
+      ⚠️ **CRITICAL FOR AGENT IOTA**: 
+      Find ALL reliable matching points. If you find less than 12 points (e.g., 3, 5, or 8), report ONLY the actual points found. DO NOT fabricate points to reach 12. Even if the count is low, return the visual mapping for those few points. Transparency is the highest priority.
+
       IMPORTANT: You must output ONLY valid JSON using the structure provided below.
     `;
 

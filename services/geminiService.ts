@@ -86,7 +86,8 @@ export const compareFingerprints = async (file1: File, file2: File): Promise<Com
       - Sigma: المسام (Level 3).
       - Theta: التشويه المرن -> يُرسل توجيهات لـ Vulcan للإصلاح.
       - Kappa: المقاييس -> يتحقق من Lyra.
-      - Iota: الرسم التوضيحي.
+      - Iota: الرسم التوضيحي (Visual Mapper). 
+        ⚠️ **CRITICAL FOR IOTA**: Find ALL reliable matching points. If you find less than 12 points (e.g., 3, 5, or 8), report ONLY the actual points found. DO NOT fabricate points to reach 12. Even if the count is low, return the visual mapping for those few points. Transparency is the highest priority.
       - Quanta: تفاصيل تحت البكسل.
 
       **المرحلة 3: الإحصاء والربط (Statistical)**

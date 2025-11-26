@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { AnatomicalMapping } from '../types';
-import { Scan, Fingerprint, List, Info } from 'lucide-react';
+import { Scan, Fingerprint, List, Info, AlertTriangle, CheckCircle } from 'lucide-react';
 
 interface VisualMatcherProps {
   data: AnatomicalMapping;
@@ -62,6 +62,9 @@ const VisualMatcher: React.FC<VisualMatcherProps> = ({ data, file1, file2 }) => 
     return map[zone] || { x: 50, y: 50 };
   };
 
+  const pointCount = data.points.length;
+  const isStandardMet = pointCount >= 12;
+
   return (
     <div className="w-full bg-slate-900 rounded-xl overflow-hidden border border-slate-700 shadow-2xl mt-6 relative print:bg-white print:border-slate-300" ref={containerRef}>
       
@@ -71,7 +74,13 @@ const VisualMatcher: React.FC<VisualMatcherProps> = ({ data, file1, file2 }) => 
           <Scan className="w-4 h-4 text-cyan-400 print:text-black" />
           Agent Iota: المطابقة التشريحية البصرية (Visual Mapping)
         </h4>
-        <span className="text-xs text-cyan-400 font-mono animate-pulse print:hidden">LIVE LINK ACTIVE</span>
+        <div className="flex items-center gap-3">
+            <span className={`text-[10px] font-mono px-2 py-0.5 rounded flex items-center gap-1 ${isStandardMet ? 'bg-green-900/30 text-green-400 border border-green-800' : 'bg-amber-900/30 text-amber-400 border border-amber-800'}`}>
+                {isStandardMet ? <CheckCircle className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
+                <span>{pointCount} / 12 نقطة</span>
+            </span>
+            <span className="text-xs text-cyan-400 font-mono animate-pulse print:hidden">LIVE LINK ACTIVE</span>
+        </div>
       </div>
 
       <div className="relative p-6 flex flex-col md:flex-row justify-between items-center gap-8 min-h-[350px]">
@@ -111,7 +120,7 @@ const VisualMatcher: React.FC<VisualMatcherProps> = ({ data, file1, file2 }) => 
                 <path 
                   d={`M ${x1} ${y1} C 50 ${y1}, 50 ${y2}, ${x2} ${y2}`}
                   fill="none" 
-                  stroke="#22d3ee" 
+                  stroke={isStandardMet ? "#22d3ee" : "#fbbf24"}
                   strokeWidth="0.5" 
                   strokeDasharray="1,1"
                   className="opacity-60 print:stroke-black print:opacity-100"
@@ -152,8 +161,8 @@ const VisualMatcher: React.FC<VisualMatcherProps> = ({ data, file1, file2 }) => 
                  className="absolute w-6 h-6 -ml-3 -mt-3 flex items-center justify-center z-30 group-hover:scale-110 transition-transform cursor-crosshair"
                  style={{ left: `${coords.x}%`, top: `${coords.y}%` }}
                >
-                 <div className="w-full h-full bg-cyan-500/20 rounded-full animate-ping absolute print:hidden"></div>
-                 <div className="w-5 h-5 bg-cyan-600 rounded-full relative border border-white shadow-lg flex items-center justify-center text-[10px] font-bold text-white print:bg-black print:text-white">
+                 <div className={`w-full h-full rounded-full animate-ping absolute print:hidden ${isStandardMet ? 'bg-cyan-500/20' : 'bg-amber-500/20'}`}></div>
+                 <div className={`w-5 h-5 rounded-full relative border border-white shadow-lg flex items-center justify-center text-[10px] font-bold text-white print:bg-black print:text-white ${isStandardMet ? 'bg-cyan-600' : 'bg-amber-600'}`}>
                     {idx + 1}
                  </div>
                </div>
@@ -189,8 +198,8 @@ const VisualMatcher: React.FC<VisualMatcherProps> = ({ data, file1, file2 }) => 
                  className="absolute w-6 h-6 -ml-3 -mt-3 flex items-center justify-center z-30 group-hover:scale-110 transition-transform cursor-crosshair"
                  style={{ left: `${coords.x}%`, top: `${coords.y}%` }}
                >
-                 <div className="w-full h-full bg-purple-500/20 rounded-full animate-ping absolute print:hidden"></div>
-                 <div className="w-5 h-5 bg-purple-600 rounded-full relative border border-white shadow-lg flex items-center justify-center text-[10px] font-bold text-white print:bg-black print:text-white">
+                 <div className={`w-full h-full rounded-full animate-ping absolute print:hidden ${isStandardMet ? 'bg-purple-500/20' : 'bg-amber-500/20'}`}></div>
+                 <div className={`w-5 h-5 rounded-full relative border border-white shadow-lg flex items-center justify-center text-[10px] font-bold text-white print:bg-black print:text-white ${isStandardMet ? 'bg-purple-600' : 'bg-amber-600'}`}>
                     {idx + 1}
                  </div>
                </div>
@@ -202,14 +211,22 @@ const VisualMatcher: React.FC<VisualMatcherProps> = ({ data, file1, file2 }) => 
 
       {/* Detailed Legend */}
       <div className="bg-slate-800/50 border-t border-slate-700 p-4 print:bg-white print:border-slate-300 print:text-black">
-        <h5 className="text-xs font-bold text-slate-400 mb-3 flex items-center gap-2 uppercase tracking-wider print:text-black">
-            <List className="w-3 h-3" />
-            دليل العلامات التشريحية (Anatomical Landmarks Legend)
-        </h5>
+        <div className="flex justify-between items-center mb-3">
+            <h5 className="text-xs font-bold text-slate-400 flex items-center gap-2 uppercase tracking-wider print:text-black">
+                <List className="w-3 h-3" />
+                دليل العلامات التشريحية (Anatomical Landmarks Legend)
+            </h5>
+            {!isStandardMet && (
+                <span className="text-[10px] text-amber-500 bg-amber-900/20 px-2 py-1 rounded border border-amber-800/50">
+                    تنبيه: عدد النقاط أقل من المعيار القياسي (12)
+                </span>
+            )}
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {data.points.map((point, idx) => (
                 <div key={idx} className="flex items-start gap-3 bg-slate-800 p-2 rounded border border-slate-700/50 hover:border-slate-600 transition-colors print:bg-white print:border-slate-300">
-                    <div className="flex-shrink-0 w-5 h-5 bg-slate-700 rounded-full flex items-center justify-center text-xs font-bold text-white border border-slate-500 print:bg-black print:text-white">
+                    <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white border border-slate-500 print:bg-black print:text-white ${isStandardMet ? 'bg-slate-700' : 'bg-amber-700'}`}>
                         {idx + 1}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -221,6 +238,11 @@ const VisualMatcher: React.FC<VisualMatcherProps> = ({ data, file1, file2 }) => 
                     </div>
                 </div>
             ))}
+            {data.points.length === 0 && (
+                <div className="col-span-2 text-center text-slate-500 py-4 text-xs italic">
+                    لم يتم العثور على نقاط تطابق مؤكدة في هذه المناطق.
+                </div>
+            )}
         </div>
       </div>
 
