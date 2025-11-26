@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Zap, Info } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { getTokenUsage } from '../services/db';
 
 const TokenTracker: React.FC = () => {
@@ -17,7 +17,7 @@ const TokenTracker: React.FC = () => {
 
     // Listen for updates from db service
     const handleUpdate = (e: CustomEvent) => {
-        if (e.detail) setTokens(e.detail);
+        if (e.detail !== undefined) setTokens(e.detail);
         else updateTokens();
     };
 
@@ -28,28 +28,34 @@ const TokenTracker: React.FC = () => {
   }, []);
 
   const percentage = Math.min(100, (tokens / DAILY_LIMIT) * 100);
+  const remaining = Math.max(0, DAILY_LIMIT - tokens);
   
-  // Color logic
+  // Color logic based on usage
   let colorClass = "bg-green-500";
   if (percentage > 50) colorClass = "bg-yellow-500";
-  if (percentage > 90) colorClass = "bg-red-500";
+  if (percentage > 80) colorClass = "bg-orange-500";
+  if (percentage > 95) colorClass = "bg-red-600";
 
   return (
-    <div className="hidden md:flex items-center gap-2 bg-slate-100/50 px-3 py-1.5 rounded-lg border border-slate-200" title={`تم استخدام ${tokens.toLocaleString()} من أصل 1.5 مليون توكن يومياً`}>
+    <div className="hidden md:flex items-center gap-3 bg-slate-100/80 px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm backdrop-blur-sm" title={`تم استخدام ${tokens.toLocaleString()} من أصل ${DAILY_LIMIT.toLocaleString()}`}>
       <div className="flex flex-col items-end">
-        <div className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
-           <Zap className="w-3 h-3 text-indigo-500 fill-indigo-500" />
-           <span>عداد التوكنز اليومي</span>
+        <div className="text-[10px] font-bold text-slate-500 flex items-center gap-1.5">
+           <Zap className={`w-3 h-3 ${percentage > 90 ? 'text-red-500 animate-pulse' : 'text-indigo-500 fill-indigo-500'}`} />
+           <span>رصيد التوكنز اليومي</span>
         </div>
-        <div className="w-24 h-1.5 bg-slate-200 rounded-full mt-1 overflow-hidden">
+        <div className="w-24 h-1.5 bg-slate-200 rounded-full mt-1.5 overflow-hidden">
           <div 
-             className={`h-full rounded-full transition-all duration-500 ${colorClass}`} 
+             className={`h-full rounded-full transition-all duration-700 ease-out ${colorClass}`} 
              style={{ width: `${percentage}%` }}
           ></div>
         </div>
       </div>
-      <div className="text-[10px] font-mono text-slate-400">
-         {(percentage).toFixed(1)}%
+      
+      <div className="flex flex-col items-end justify-center border-r border-slate-200 pr-3 min-w-[60px]">
+         <span className={`text-xs font-mono font-black leading-none ${remaining < 100000 ? 'text-red-600' : 'text-slate-700'}`}>
+           {remaining.toLocaleString()}
+         </span>
+         <span className="text-[9px] text-slate-400 font-bold mt-0.5">متبقي</span>
       </div>
     </div>
   );
